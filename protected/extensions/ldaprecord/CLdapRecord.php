@@ -216,16 +216,6 @@ abstract class CLdapRecord extends CModel {
 		if(property_exists($this, $name)) {
 			return $this->$name;
 		}
-/*
-		else if ('attributes' == $name) {
-			$retval = array();
-			foreach($this->_attributes as $name => $info) {
-				if (isset($info['alias'])) continue;
-				$retval[$name] = $info['value'];
-			}
-			return $retval;
-		}
-*/
 		else if(array_key_exists($name, $this->_attributes) ||
 			array_key_exists(strtolower($name), $this->_attributes)) {
 			$name = strtolower($name);
@@ -280,11 +270,11 @@ abstract class CLdapRecord extends CModel {
 							if (is_array($value)) {
 								$this->_attributes[$name]['value'] = $value;
 							}
-							else {
+							else  if (!is_null($value)) {
 								$this->_attributes[$name]['value'] = array($value);
 							}
 						}
-						else {
+						else if (!is_null($value)) {
 							$this->_attributes[$name]['value'][] = $value;
 						}
 						break;
@@ -924,7 +914,7 @@ abstract class CLdapRecord extends CModel {
 		$entry = array();
 		foreach($this->_attributes as $key => $value) {
 			if ('member' == $key) continue;
-			if ('dn' !== $key && isset($value['value']) && '' !== $value['value'] && (!isset($value['readOnly']) || !$value['readOnly'])) {
+			if ('dn' !== $key && !is_null($value['value']) && (!isset($value['readOnly']) || !$value['readOnly'])) {
 				if (is_array($value['value'])) {
 					if ('assozarray' == $value['type']) {
 						$retval = array();
@@ -938,7 +928,7 @@ abstract class CLdapRecord extends CModel {
 						$entry[$key] = $value['value'];
 					}
 				}
-				else {
+				else if (isset($value['value']) && '' !== $value['value']) {
 					$entry[$key][] = $value['value'];
 				}
 			}
@@ -979,7 +969,7 @@ abstract class CLdapRecord extends CModel {
 				throw new CLdapException(Yii::t('LdapComponent.record', 'Unknown objectClass "{class}"!', array('{class}' => $objClassName)));
 			}
 			if ('labeledURIObject' == $objClassName) {
-				$this->_attributes['member'] = array('mandatory' => false, 'type' => 'array');
+				$this->_attributes['member'] = array('mandatory' => false, 'type' => 'array', 'value' => null);
 			}
 		}
 		$this->_attributes['createtimestamp'] = array('mandatory' => false, 'readOnly' => true, 'type' => '', 'value' => null);
