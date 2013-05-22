@@ -5,6 +5,13 @@
  *                    http://www.foss-group.de
  *                    support@foss-group.de
  *
+ * and
+ *
+ * Copyright (C) 2013 stepping stone GmbH
+ * Switzerland
+ * http://www.stepping-stone.ch
+ * support@stepping-stone.ch
+ *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
  *
@@ -486,8 +493,6 @@ class VmTemplateController extends Controller
 		$this->disableWebLogRoutes();
 		if (isset($_GET['dn']) && isset($_GET['pool'])) {
 			$result = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_GET['dn']);
-			$result->setOverwrite(true);
-			$result->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 			//$pools = CLdapRecord::model('LdapVmPool')->findAll( array('attr'=>array()));
 			//$result->sstVirtualMachinePool = $pools[0]->sstVirtualMachinePool;
 
@@ -528,10 +533,17 @@ class VmTemplateController extends Controller
 			$vm = new LdapVm();
 			/* Don't change the labeledURI; must refer to a default Profile */
 			$vm->attributes = $result->attributes;
-
 			$vm->setOverwrite(true);
+			$vm->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
+				
 			if (isset($_GET['name']) && '' != $_GET['name']) {
 				$vm->sstDisplayName = $_GET['name'];
+			}
+			if (isset($_GET['hostname']) && '' != $_GET['hostname']) {
+				$vm->sstNetworkHostname = $_GET['hostname'];
+			}
+			if (isset($_GET['domainname']) && '' != $_GET['domainname']) {
+				$vm->sstNetworkDomainName = $_GET['domainname'];
 			}
 			$vm->sstVirtualMachineType = 'persistent';
 			$vm->sstVirtualMachineSubType = $_GET['subtype'];
@@ -566,67 +578,91 @@ class VmTemplateController extends Controller
 				$disk->setOverwrite(true);
 				$disk->attributes = $rdisk->attributes;
 				if ('disk' == $disk->sstDevice) {
-					$persistentdir = substr($storagepool->sstStoragePoolURI, 7);
-					$copydata = CPhpLibvirt::getInstance()->copyVolumeFile($persistentdir, $disk);
-					$copydata['Dn'] = $vm->getDn();
-					$disk->sstVolumeName = $copydata['VolumeName'];
-					$disk->sstSourceFile = $copydata['SourceFile'];
-					$_SESSION['copyVolumeFile'] = $copydata;
+					$templatesdir = substr($storagepool->sstStoragePoolURI, 7);
+					//$goldenimagepath = $vm->devices->getDiskByName('vda')->sstSourceFile;
+					$diskpath = $result->devices->getDiskByName('vda')->sstSourceFile; //sstVolumeName . '.qcow2';
+					$names = CPhpLibvirt::getInstance()->createBackingStoreVolumeFile($templatesdir, $storagepool->sstStoragePool, $diskpath, $usedNode->getLibvirtUri(), $disk->sstVolumeCapacity);
+					if (false !== $names) {
+						$disk->sstVolumeName = $names['VolumeName'];
+						$disk->sstSourceFile = $names['SourceFile'];
+						
+						// Don't set $result->setOverwrite(true); because sstThinProvisioningVirtualMachine is a multiple attribute
+						$result->sstThinProvisioningVirtualMachine = $vm->sstVirtualMachine;
+						$result->update();
+					}
+					else {
+						$hasError = true;
+						$vm->delete(true);
+						$this->sendAjaxAnswer(array('error' => 1, 'message' => 'Unable to create backingstore volume!'));
+						break;
+					}
 				}
+				
 				$disk->setBranchDn($devices->dn);
 				$disk->save();
 			}
-			$firstMac = null;
-			foreach($rdevices->interfaces as $rinterface) {
-				$interface = new LdapVmDeviceInterface();
-				$interface->attributes = $rinterface->attributes;
-				$interface->setOverwrite(true);
-				$interface->sstMacAddress = CPhpLibvirt::getInstance()->generateMacAddress();
-				if (is_null($firstMac)) {
-					$firstMac = $interface->sstMacAddress;
+			if (!$hasError) {
+				$firstMac = null;
+				foreach($rdevices->interfaces as $rinterface) {
+					$interface = new LdapVmDeviceInterface();
+					$interface->attributes = $rinterface->attributes;
+					$interface->setOverwrite(true);
+					$interface->sstMacAddress = CPhpLibvirt::getInstance()->generateMacAddress();
+					if (is_null($firstMac)) {
+						$firstMac = $interface->sstMacAddress;
+					}
+					$interface->setBranchDn($devices->dn);
+					$interface->save();
 				}
-				$interface->setBranchDn($devices->dn);
-				$interface->save();
+	
+				$range = $vmpool->getRange();
+				if (is_null($range)) {
+					$vm->delete(true);
+					$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No range found for VMPool!')));
+					return;
+				}
+				$dhcpvm = new LdapDhcpVm();
+				$dhcpvm->setBranchDn('ou=virtual machines,' . $range->subnet->dn);
+				$dhcpvm->cn = $vm->sstVirtualMachine;
+				$dhcpvm->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
+				$dhcpvm->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+				$dhcpvm->sstBelongsToPersonUID = Yii::app()->user->UID;
+	
+				$dhcpvm->dhcpHWAddress = 'ethernet ' . $firstMac;
+				$dhcpvm->dhcpStatements = 'fixed-address ' . $range->getFreeIp();
+				$dhcpvm->dhcpStatements = 'option host-name "' . $vm->sstDisplayName . '"';
+				$dhcpvm->save();
+	
+				$server = CLdapServer::getInstance();
+				$data = array();
+				$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
+				$data['ou'] = array('groups');
+				$data['description'] = array('This is the assigned groups subtree.');
+				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$dn = 'ou=groups,' . $vm->dn;
+				$server->add($dn, $data);
+	
+				$data = array();
+				$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
+				$data['ou'] = array('people');
+				$data['description'] = array('This is the assigned people subtree.');
+				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$dn = 'ou=people,' . $vm->dn;
+				$server->add($dn, $data);
+				
+				// Workaround to get Node
+				$vm = CLdapRecord::model('LdapVm')->findByDn($vm->getDn());
+
+				if (!CPhpLibvirt::getInstance()->startVmWithBlockJob($vm->getStartParams())) {
+					$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'Error starting block job!')));
+					Yii::app()->exit(1);
+				}
 			}
-
-			$range = $vmpool->getRange();
-			if (is_null($range)) {
-				$vm->delete(true);
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No range found for VMPool!')));
-				return;
-			}
-			$dhcpvm = new LdapDhcpVm();
-			$dhcpvm->setBranchDn('ou=virtual machines,' . $range->subnet->dn);
-			$dhcpvm->cn = $result->sstVirtualMachine;
-			$dhcpvm->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
-			$dhcpvm->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
-			$dhcpvm->sstBelongsToPersonUID = Yii::app()->user->UID;
-
-			$dhcpvm->dhcpHWAddress = 'ethernet ' . $firstMac;
-			$dhcpvm->dhcpStatements = 'fixed-address ' . $range->getFreeIp();
-			$dhcpvm->save();
-
-			$server = CLdapServer::getInstance();
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
-			$data['ou'] = array('groups');
-			$data['description'] = array('This is the assigned groups subtree.');
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn = 'ou=groups,' . $vm->dn;
-			$server->add($dn, $data);
-
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
-			$data['ou'] = array('people');
-			$data['description'] = array('This is the assigned people subtree.');
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn = 'ou=people,' . $vm->dn;
-			$server->add($dn, $data);
 		}
 		//$this->redirect(array('index', 'copyaction' => $copydata['pid']));
-		$this->sendAjaxAnswer(array('error' => 0, 'url' => $this->createUrl('index', array('copyaction' => $copydata['pid']))));
+		$this->sendAjaxAnswer(array('error' => 0, 'message' => 'OK')); //'url' => $this->createUrl('index')));//, array('copyaction' => $copydata['pid']))));
 	}
 
 	public function actionFinishDynamic() {
@@ -1190,9 +1226,17 @@ EOS;
 			'cssFile' => 'singleselect.css',
 		));
 		$dual->run();
+		
+		//$name = isset($_GET['name']) ? $_GET['name'] : '';
+		$config = LdapConfigurationHostname::model()->findAll(array('filterName' => 'all'));
+		$hostname = $config[0]->getNextHostname();
+		 
+		$name = $hostname . '.' . $config[0]->sstNetworkDomainName;
 ?>
 		<div style="padding-top: 10px; clear: both;">
-			<label for="displayname">Name </label><input type="text" id="displayname" name="displayname" value="<?php echo (isset($_GET['name']) ? $_GET['name'] : ''); ?>"/>
+			<label for="displayname">Name </label><input type="text" id="displayname" name="displayname" disabled="disabled" value="<?php echo $name; ?>"/>
+			<input type="hidden" id="hostname" name="hostname" value="<?php echo $hostname; ?>" />
+			<input type="hidden" id="domainname" name="domainname" value="<?php echo $config[0]->sstNetworkDomainName; ?>" />
 		</div>
 		<br/>
 		<div id="radiosubtype" style="">
@@ -1428,20 +1472,50 @@ EOS;
 			$dns = explode(';', $_GET['dns']);
 			foreach($dns as $dn) {
 				//echo "DN: $dn";
-				$vm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($dn);
+				$vm = LdapVmFromTemplate::model()->findByDn($dn);
 				//echo '<pre>' . print_r($vm, true) . '</pre>';
 				if (!is_null($vm)) {
 					$answer = array('node' => $vm->sstNode, 'statustxt' => '');
 					$libvirt = CPhpLibvirt::getInstance();
 					$status = $libvirt->getVmStatus(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
-					if ($status['active']) {
-						$memory = $this->getHumanSize($status['memory'] * 1024);
-						$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
-						//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode);
-						$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode, 'spice' => $vm->getSpiceUri());
+					if ($vm->hasActiveBackup()) {
+						$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'backup', 'spice' => $vm->getSpiceUri()));
 					}
 					else {
-						$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
+						if ($status['active']) {
+							$memory = $this->getHumanSize($status['memory'] * 1024);
+							$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
+							//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode);
+							$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode, 'spice' => $vm->getSpiceUri());
+						}
+						else {
+							if (isset($vm->sstThinProvisioningVirtualMachine)) {
+								$prov = $vm->sstThinProvisioningVirtualMachine;
+								foreach($vm->sstThinProvisioningVirtualMachine as $uuid) {
+									$othervm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $uuid)));
+									$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, 'vda');
+									if (true === $info) {
+										unset($prov[array_search($uuid, $prov)]);
+									}
+								}
+								if (0 == count($prov)) {
+									$data = array('sstThinProvisioningVirtualMachine' => array());
+									CLdapServer::getInstance()->modify_del($vm->getDn(), $data);
+
+									$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
+								}
+								else {
+									$vm->setOverwrite(true);
+									$vm->sstThinProvisioningVirtualMachine = $prov;
+									$vm->update();
+
+									$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'preparing', 'spice' => $vm->getSpiceUri()));
+								}
+							}
+							else {
+								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
+							}
+						}
 					}
 				}
 				else {

@@ -5,6 +5,13 @@
  *                    http://www.foss-group.de
  *                    support@foss-group.de
  *
+ * and
+ *
+ * Copyright (C) 2013 stepping stone GmbH
+ * Switzerland
+ * http://www.stepping-stone.ch
+ * support@stepping-stone.ch
+ *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
  *
@@ -156,6 +163,14 @@ function refreshNextVm()
 						break;
 					case 'shutdown':
 						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false, 'vmtemplate_finish': true, 'vmtemplate_finishdyn': true};
+						state = 'red';
+						break;
+					case 'preparing':
+						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_login': false, 'vmtemplate_finish': true, 'vmtemplate_finishdyn': true};
+						state = 'red';
+						break;
+					case 'backup':
+						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
 						state = 'red';
 						break;
 				}
@@ -604,7 +619,7 @@ $selectStaticGuiUrl = $this->createUrl('vmTemplate/getStaticPoolGui');
 $selectStaticTxt = Yii::t('vm', 'Create persistent VM');
 
 Yii::app()->clientScript->registerScript('finish', <<<EOS
-function finish(id, pooldn, name, subtype)
+function finish(id, pooldn, name, subtype, domainname, hostname)
 {
 	$('#selectStaticButton').attr('disabled', 'disabled');
 	$('#selectStaticButton').addClass('ui-state-disabled');
@@ -620,7 +635,7 @@ function finish(id, pooldn, name, subtype)
 		url: "{$baseurl}/vmTemplate/finish",
 		cache: false,
 		dataType: 'xml',
-		data: 'dn=' + row['dn'] + '&pool=' + pooldn + '&name=' + name + '&subtype=' + subtype,
+		data: 'dn=' + row['dn'] + '&pool=' + pooldn + '&name=' + name + '&subtype=' + subtype + '&domainname=' + domainname + '&hostname=' + hostname,
 		success: function(xml){
 			var err = $(xml).find('error');
 			err = err.text();
@@ -678,7 +693,7 @@ function selectStaticPool(id)
 				else if ( $('#radiosubtype2').attr('checked')) {
 					subtype = $('#radiosubtype2').val();
 				}
-				finish(id, selected[0], $('#displayname').val(), subtype);
+				finish(id, selected[0], $('#displayname').val(), subtype, $('#hostname').val(), $('#domainname').val());
 				//migrateVm(id, selected[0]);
 				//$.fancybox.close();
 			});

@@ -108,13 +108,16 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 			$_SESSION['phplibvirt']['vms'][$data['name']] = 5 > rand(1, 10);
 		}
 		$retval['active'] = $_SESSION['phplibvirt']['vms'][$data['name']];
+		if ($retval['active']) {
+			$retval['state'] = isset($_SESSION['phplibvirt']['blockjob'][$data['name']]) ? 'paused' : 'running';
+		}
 		$retval['memory'] = rand(128000, 16777216);
 		$retval['maxMem'] = 16777216;
 		$retval['cpuTime'] = rand(30, 85);
 		$retval['nrVirtCpu'] = 1;
 		$retval['cpuTimeOrig'] = 32.5;
 		Yii::log('dummy_getVmStatus: ' . print_r($retval, true), 'profile', 'phplibvirt');
-		sleep(2);
+		//sleep(2);
 		return $retval;
 	}
 
@@ -170,7 +173,7 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 	    return false;
 	}
 
-	public function createStoragePool($host, $basepath) {
+	public function createStoragePool($host, $uuid, $path) {
 		$path = $basepath . '/' . $this->generateUUID();
 
 		if (!file_exists($path)) {
@@ -184,5 +187,33 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 		if (!file_exists($path)) {
 			rmdir($path);
 		}
+	}
+
+	public function startVmWithBlockJob($data) {
+		$_SESSION['phplibvirt']['vms'][$data['sstName']] = true;
+		$_SESSION['phplibvirt']['blockjob'][$data['sstName']] = 0;
+		sleep(2);
+		return true;
+	}
+
+	public function checkBlockJob($host, $uuid, $disk) {
+		$retval = false;
+		
+		if (!isset($_SESSION['phplibvirt']['blockjob'][$uuid])) {
+			$progress = 0;
+		}
+		else {
+			$progress = $_SESSION['phplibvirt']['blockjob'][$uuid];
+		}
+		if ($progress == 100) {
+			$retval = true;
+			unset($_SESSION['phplibvirt']['blockjob'][$uuid]);
+		}
+		else {
+			$progress += 10;
+			$_SESSION['phplibvirt']['blockjob'][$uuid] = $progress;
+			$retval = array('cur' => 123456 * $progress / 100, 'end' => 123456); 
+		}
+		return $retval;
 	}
 }

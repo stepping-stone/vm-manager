@@ -5,6 +5,13 @@
  *                    http://www.foss-group.de
  *                    support@foss-group.de
  *
+ * and
+ *
+ * Copyright (C) 2013 stepping stone GmbH
+ * Switzerland
+ * http://www.stepping-stone.ch
+ * support@stepping-stone.ch
+ *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
  *
@@ -187,6 +194,9 @@ function refreshNextVm()
 						break;
 				}
 				status += data[row['uuid']]['statustxt'];
+				if (data[row['uuid']]['progress'] != undefined) {
+					status += ' ' + data[row['uuid']]['progress'] + "%";
+				}
 
 				refreshVmButtons(id, buttons);
 				if (buttons['vm_edit'])

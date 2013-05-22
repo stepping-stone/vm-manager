@@ -5,6 +5,13 @@
  *                    http://www.foss-group.de
  *                    support@foss-group.de
  *
+ * and
+ *
+ * Copyright (C) 2013 stepping stone GmbH
+ * Switzerland
+ * http://www.stepping-stone.ch
+ * support@stepping-stone.ch
+ *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
  *  Axel Westhagen <axel.westhagen@limbas.com>
@@ -51,14 +58,15 @@
 class CPhpLibvirt {
 	private static $_instance = null;
 
-	public static $VIR_DOMAIN_NOSTATE	= 	0; // no state
-	public static $VIR_DOMAIN_RUNNING	= 	1; // the domain is running
-	public static $VIR_DOMAIN_BLOCKED	= 	2; // the domain is blocked on resource
-	public static $VIR_DOMAIN_PAUSED	= 	3; // the domain is paused by user
-	public static $VIR_DOMAIN_SHUTDOWN	= 	4; // the domain is being shut down
-	public static $VIR_DOMAIN_SHUTOFF	= 	5; // the domain is shut off
-	public static $VIR_DOMAIN_CRASHED	= 	6; // the domain is crashed
-
+	public static $VIR_DOMAIN_NOSTATE	  = 0; // no state
+	public static $VIR_DOMAIN_RUNNING	  = 1; // the domain is running
+	public static $VIR_DOMAIN_BLOCKED	  = 2; // the domain is blocked on resource
+	public static $VIR_DOMAIN_PAUSED	  = 3; // the domain is paused by user
+	public static $VIR_DOMAIN_SHUTDOWN	  = 4; // the domain is being shut down
+	public static $VIR_DOMAIN_SHUTOFF	  = 5; // the domain is shut off
+	public static $VIR_DOMAIN_CRASHED	  = 6; // the domain is crashed
+	public static $VIR_DOMAIN_PMSUSPENDED	  = 7; // the domain is suspended by guest power management
+	
 	public static $VIR_MIGRATE_LIVE              =    1; // live migration
 	public static $VIR_MIGRATE_PEER2PEER         =    2; // direct source -> dest host control channel Note the less-common spelling that we're stuck with: VIR_MIGRATE_TUNNELLED should be VIR_MIGRATE_TUNNELED
 	public static $VIR_MIGRATE_TUNNELLED         =    4; // tunnel migration data over libvirtd connection
@@ -72,7 +80,8 @@ class CPhpLibvirt {
 	public static $VIR_MIGRATE_OFFLINE           = 1024; // offline migrate
 	public static $VIR_MIGRATE_COMPRESSED        = 2048; // compress data during migration
 	
-
+	public static $VIR_DOMAIN_START_PAUSED	 =	1; // Launch guest in paused state	
+	
 	private $connections = array();
 
 	private function __construct() {
@@ -97,6 +106,34 @@ class CPhpLibvirt {
 		$domain = libvirt_domain_lookup_by_name($con, $data['sstName']);
 		Yii::log('startVm: libvirt_domain_create(' . $data['sstName'] . ')', 'profile', 'phplibvirt');
 		return libvirt_domain_create($domain);
+	}
+
+	public function startVmWithBlockJob($data) {
+		$con = $this->getConnection($data['libvirt']);
+		if (!is_null($con)) {
+			Yii::log('startVmWithBlockJob: libvirt_domain_define_xml(' . $data['libvirt'] . ', ' . $this->getXML($data) . ')', 'profile', 'phplibvirt');
+			$domain = libvirt_domain_define_xml($con, $this->getXML($data));
+			if (false !== $domain) {
+				Yii::log('startVmWithBlockJob: libvirt_domain_create(' . $data['libvirt'] . ', ' . self::$VIR_DOMAIN_START_PAUSED . ')', 'profile', 'phplibvirt');
+				$retval = libvirt_domain_create($domain, self::$VIR_DOMAIN_START_PAUSED);
+				echo '<pre>libvirt_domain_create ' . var_export($retval, true) . '</pre>';
+				if ($retval) {
+					foreach($data['devices']['disks'] as $disk) {
+						echo $disk['sstDevice'] . ': ' . $disk['sstDisk'] . '<br/>';
+						if ('disk' == $disk['sstDevice']) {
+							Yii::log('startVmWithBlockJob: libvirt_domain_block_pull(' . $data['libvirt'] . ', ' . $disk['sstDisk'] . ', 10)', 'profile', 'phplibvirt');
+							if (0 != libvirt_domain_block_pull($domain, $disk['sstDisk'], 10)) {
+								return false;
+							}
+							else {
+								$retval = libvirt_domain_resume($domain);
+							}
+						}
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	public function startDynVm($data) {
@@ -771,6 +808,25 @@ class CPhpLibvirt {
 		}catch(Exception $e){}
 
 		return false;
+	}
+
+	public function checkBlockJob($host, $uuid, $disk) {
+		$retval = false;
+		
+		Yii::log('checkBlockJob: ' . $host . ', ' . $uuid . ',' . $disk, 'profile', 'phplibvirt');
+
+		$con = $this->getConnection($host);
+		if (!is_null($con)) {
+			Yii::log('checkBlockJob: connection ok', 'profile', 'phplibvirt');
+			Yii::log('checkBlockJob: libvirt_domain_lookup_by_uuid_string(' . $data['libvirt'] . ', ' . $uuid . ')', 'profile', 'phplibvirt');
+			$domain  = &libvirt_domain_lookup_by_uuid_string($con, $uuid);
+			if (false !== $domain) {
+				Yii::log('checkBlockJob: libvirt_domain_get_block_job_info(' . $uuid . ', ' . $disk . ')', 'profile', 'phplibvirt');
+				$retval = libvirt_domain_get_block_job_info($domain, $disk);
+				Yii::log('checkBlockJob: info ' . print_r($retval, true), 'profile', 'phplibvirt');
+			}
+		}
+		return $retval;
 	}
 
 	protected function rmdir($dir) {

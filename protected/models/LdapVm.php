@@ -68,6 +68,14 @@ class LdapVm extends CLdapRecord {
 		);
 	}
 
+	protected function createAttributes() {
+		parent::createAttributes();
+
+		if (isset($this->_attributes['sstthinprovisioningvirtualmachine'])) {
+			$this->_attributes['sstthinprovisioningvirtualmachine']['type'] = 'array';
+		}
+	}
+	
 	/**
 	 * Returns the static model of the specified LDAP class.
 	 * @return CLdapRecord the static model class
@@ -168,6 +176,15 @@ class LdapVm extends CLdapRecord {
 		}
 	}
 
+
+	public function hasActiveBackup() {
+		$single = LdapVmSingleBackup::model();
+		$single->branchDn = $this->getDn(); // Don't use 'ou=backup,' . $this->getDn(); because there might be no backup branch
+		$active = $single->findAll(array('filterName' => 'active', 'depth' => true));
+				
+		return 0 < count($active);
+	}
+	
 	/**
 	 * @return array customized attribute labels (name=>label)
 	 */

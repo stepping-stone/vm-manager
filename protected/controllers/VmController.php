@@ -490,10 +490,10 @@ class VmController extends Controller
 		echo <<<EOS
     <table style="margin-bottom: 0px; font-size: 90%; width: auto;"><tbody>
     <tr>
-      <td style="text-align: right"><b>Type:</b></td>
-      <td>{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
-      <td style="text-align: right"><b>VM UUID:</b></td>
-      <td>{$vm->sstVirtualMachine}</td>
+       <td style="text-align: right; vertical-align: top;"><b>Type:</b></td>
+      <td style="vertical-align: top;">{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
+      <td style="text-align: right; vertical-align: top;"><b>VM:</b></td>
+      <td>{$vm->sstDisplayName}<br/>{$vm->sstVirtualMachine}</td>
     </tr>
     <tr>
       <td style="text-align: right; vertical-align: top;"><b>Memory:</b></td>
@@ -873,7 +873,27 @@ EOS;
 								$memory = $this->getHumanSize($status['memory'] * 1024);
 								$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
 								//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'cpu' => $status['cpuTime'], 'cpuOrig' => $status['cpuTimeOrig']);
-								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'running', 'mem' => $memory . ' / ' . $maxmemory, 'spice' => $vm->getSpiceUri()));
+								$state = 'running';
+								if ('persistent' === $vm->sstVirtualMachineType) {
+									$templates = LdapVmFromTemplate::model()->findAll(array('attr' => array('sstVirtualMachineType' => 'template', 'sstThinProvisioningVirtualMachine' => $vm->sstVirtualMachine)));
+									if (0 < count($templates)) {
+										$state = 'preparing';
+										$info = $libvirt->checkBlockJob($vm->node->getLibvirtUri(), $vm->sstVirtualMachine, 'vda');
+										if (true !== $info) {
+											$answer['progress'] = $info['cur'] / $info['end'] * 100;
+										} 
+									}
+								}
+								switch($status['state']) {
+									case CPhpLibvirt::$VIR_DOMAIN_RUNNING: $answer['statustxt'] = ', ' . 'running'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_BLOCKED: $answer['statustxt'] = ', ' . 'blocked'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_PAUSED: $answer['statustxt'] = ', ' . 'paused'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_SHUTDOWN: $answer['statustxt'] = ', ' . 'shutdown'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_SHUTOFF: $answer['statustxt'] = ', ' . 'shutoff'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_CRASHED: $answer['statustxt'] = ', ' . 'crashed'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_PMSUSPENDED: $answer['statustxt'] = ', ' . 'suspended'; break;
+								}
+								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => $state, 'mem' => $memory . ' / ' . $maxmemory, 'spice' => $vm->getSpiceUri()));
 							}
 							else if ('dynamic' == $vm->sstVirtualMachineType && ('Desktop' == $vm->sstVirtualMachineSubType || 'Server' == $vm->sstVirtualMachineSubType)) {
 //								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'removed'));

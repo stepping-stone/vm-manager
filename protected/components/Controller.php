@@ -112,7 +112,7 @@ class Controller extends CController
 							'label' => Yii::t('menu', 'Dynamic Virtual Machines'),
 							'url' => array('/vm/index', 'vmtype' => 'dynamic'),
 							'itemOptions' => array('title' => Yii::t('menu', 'Dynamic Virtual Machines Tooltip')),
-							'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'dynamic' == $_GET['vmtype'])
+							'active' => ($this->id == 'vmdyn' && $action == 'index' && isset($_GET['vmtype']) && 'dynamic' == $_GET['vmtype'])
 						),
 						'vmtemplate' => array(
 							'label' => Yii::t('menu', 'Virtual Machine Templates'),
