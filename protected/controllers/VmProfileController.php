@@ -130,6 +130,14 @@ class VmProfileController extends Controller
 			$isodir = LdapStoragePoolDefinition::getPathByType('iso');
 			$isosourcefile = $isodir . CPhpLibvirt::getInstance()->generateUUID() . '.iso';
 
+			$os = LdapVmOperatingSystem::model();
+			$os->ou = 'operating system';
+			$os->sstOperatingSystem = $model->os;
+			$os->sstOperatingSystemType = $model->ostype;
+			$os->sstOperatingSystemVersion = $model->osversion;
+			$os->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
+			$os->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+				
 			$copydata = array();
 			$parts = explode('°', $_POST['VmProfileForm']['path']);
 			if ('default' == $parts[1]) {
@@ -185,6 +193,8 @@ class VmProfileController extends Controller
 				$server->add($dn, $data);
 				$profilevm->setBranchDn($dn);
 				$profilevm->save();
+				$os->setBranchDn($profilevm->dn);
+				$os->save();
 				$devices = new LdapVmDevice();
 				//echo '<pre>' . print_r($result->devices, true) . '</pre>';
 				$devices->attributes = $rdevices->attributes;
@@ -263,6 +273,8 @@ class VmProfileController extends Controller
 				$server->add($dn, $data);
 				$profilevm->setBranchDn($dn);
 				$profilevm->save();
+				$os->setBranchDn($profilevm->dn);
+				$os->save();
 				$devices = new LdapVmDevice();
 				//echo '<pre>' . print_r($result->devices, true) . '</pre>';
 				$devices->attributes = $rdevices->attributes;
@@ -324,6 +336,7 @@ class VmProfileController extends Controller
 				'model' => $model,
 				'isofiles' => $isofiles,
 				'profiles' => $this->getProfilesFromSubTree($result),
+				'operatingsystems' => LdapConfigurationOperatingSystem::model()->findAll(array('attr'=>array())),
 				'defaults' => null,
 			));
 		}
@@ -397,9 +410,22 @@ class VmProfileController extends Controller
 			$result = $vm->devices->getDiskByName('vda');
 			$model->sstVolumeCapacity = $result->sstVolumeCapacity;
 
+			$os = $vm->operatingsystem;
+			if (!is_null($os)) {
+				$model->os = $os->sstOperatingSystem;
+				$model->ostype = $os->sstOperatingSystemType;
+				$model->osversion = $os->sstOperatingSystemVersion;
+			}
+			else {
+				$model->os = 'OS?';
+				$model->ostype = 'Type?';
+				$model->osversion = 'Version?';
+			}
+				
 			$this->render('update',array(
 				'model' => $model,
 				'profiles' => null,
+				'operatingsystems' => null,
 				'defaults' => $defaults,
 			));
 		}
@@ -732,6 +758,7 @@ class VmProfileController extends Controller
 		$defaults = array();
 		$this->disableWebLogRoutes();
 		if (isset($_GET['dn'])) {
+			$parts = explode('°', $_GET['p']);
 			$defaults['path'] = $_GET['p'];
 			if ('sstVirtualMachine=default' == substr($_GET['dn'], 0, strlen('sstVirtualMachine=default'))) {
 				$defaults['type'] = 'default';
@@ -759,7 +786,6 @@ class VmProfileController extends Controller
 			}
 			else {
 				$defaults['type'] = 'other';
-				$parts = explode('°', $_GET['p']);
 				$defaults['name'] = $parts[1];
 				$vm = CLdapRecord::model('LdapVmFromProfile')->findByDn($_GET['dn']);
 				$defaults['description'] = $vm->description;
@@ -781,6 +807,19 @@ class VmProfileController extends Controller
 				$defaults['volumecapacitymin'] = $result->sstVolumeCapacityMin;
 				$defaults['volumecapacitymax'] = $result->sstVolumeCapacityMax;
 				$defaults['volumecapacitystep'] = $result->sstVolumeCapacityStep;
+			}
+			$defaults['os'] = ucfirst(strtolower($parts[0]));
+			$os = LdapConfigurationOperatingSystem::model()->findAll(array('attr' => array('sstDisplayName' => $defaults['os'])));
+			if (1 == count($os)) {
+				$defaults['ostypes'] = array();
+				$defaults['osversions'] = array();
+				foreach($os[0]->types as $type) {
+					$defaults['ostypes'][$type->sstDisplayName] = $type->sstDisplayName;
+					$defaults['osversions'][$type->sstDisplayName] = array();
+					foreach($type->versions as $version) {
+						$defaults['osversions'][$type->sstDisplayName][$version->sstDisplayName] = $version->sstDisplayName;
+					}
+				}
 			}
 		}
 		$s = CJSON::encode($defaults);

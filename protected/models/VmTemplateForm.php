@@ -33,6 +33,8 @@ class VmTemplateForm extends CFormModel {
 	public $path;
 	public $basis;
 	public $name;
+	public $domainname;
+	public $hostname;
 	public $vmpool;
 	public $sstVolumeCapacity;
 	public $sstClockOffset;
@@ -44,12 +46,16 @@ class VmTemplateForm extends CFormModel {
 	public $staticIP;
 	public $ip;
 	public $range;
-
+	public $os;
+	public $ostype;
+	public $osversion;
+	
 	public function rules()
 	{
 		return array(
-			array('path, basis, node, name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'create'),
-			array('name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'update'),
+			array('path, basis, node, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'create'),
+			array('description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'update'),
+			array('name, domainname, hostname, os, ostype, osversion', 'safe'),
 			array('name', 'uniqueName',
 				'branches'=>array('ou=virtual machines,ou=virtualization,ou=services'),
 				'filter'=>'(&(sstDisplayName={name})(sstVirtualMachineType=template))',

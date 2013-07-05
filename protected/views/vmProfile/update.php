@@ -36,4 +36,4 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('vmprofile', 'Edit VMProfile "{name}"', array('{name}' => $model->name));
 //$this->helpurl = Yii::t('help', 'editVmProfile');
 
-echo $this->renderPartial('_form', array('model'=>$model,'profiles' =>$profiles,'defaults'=>$defaults,'submittext'=>Yii::t('vmprofile','Save')));
+echo $this->renderPartial('_form', array('model'=>$model,'profiles' =>$profiles,'operatingsystems'=>$operatingsystems,'defaults'=>$defaults,'submittext'=>Yii::t('vmprofile','Save')));

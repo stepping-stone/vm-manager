@@ -119,6 +119,17 @@ if (!is_null($profiles)) {
 				$('#sstVolumeCapacityMin_display').html(getHumanSize(data['volumecapacitymin']));
 				$('#sstVolumeCapacityMax_display').html(getHumanSize(data['volumecapacitymax']));
 
+				$('#VmProfileForm_os').val(data['os']);
+				$('#os').prop('disabled', false).val(data['os']).prop('disabled', true);
+				$('#VmProfileForm_ostype').empty(); // remove old options
+				$('#VmProfileForm_ostype').append($('<option></option>'));
+				$.each(data['ostypes'], function(key, value) {
+					option = $('<option></option>');
+					option.attr('value', key).text(value);
+					$('#VmProfileForm_ostype').append(option);
+				});
+				osversions = data['osversions'];
+						
 				$('#submit').removeAttr('disabled');
 			},
 		});
@@ -129,8 +140,22 @@ EOS
 	$('#hidestep2').height($('#step2').height());
 	$('#hidestep2').width($('#step2').width());
 	$('#hidestep2').offset($('#step2').offset());
+
+	var osversions = null;
+	$('#VmProfileForm_ostype').change(function(event) {
+		var val = $(this).val();
+		$('#VmProfileForm_osversion').empty();
+		$('#VmProfileForm_osversion').append($('<option></option>'));
+		if ('' != val) {
+			$.each(osversions[val], function(key, value) {
+				option = $('<option></option>');
+				option.attr('value', key).text(value);
+				$('#VmProfileForm_osversion').append(option);
+			});
+		}
+	});
 EOS
-	, CClientScript::POS_READY);
+, CClientScript::POS_READY);
 
 	//echo '<pre>' . print_r($treedata, true) . '</pre>';
 ?>
@@ -139,7 +164,7 @@ EOS
 	<div id="errormessage" class="errorMessage">
 		<?php echo $form->errorSummary($model); ?>
 	</div>
-	<div id="step1" class="column span-7">
+	<div id="step1" class="column span-8">
 		<div class="step"><?= Yii::t('vmprofile', 'step1');?> <p><?=Yii::t('vmprofile', 'step1text');?></p></div>
 		<div class="row">
 			<?php echo $form->labelEx($model,'profile'); ?>
@@ -154,7 +179,7 @@ EOS
 ?>
 		</div>
 	</div>
-	<div id="step2" class="column span-10">
+	<div id="step2" class="column span-13 last">
 		<div class="step"><?= Yii::t('vmprofile', 'step2');?> <p><?=Yii::t('vmprofile', 'step2text');?></p></div>
 		<div class="row">
 			<?php echo $form->labelEx($model,'isofile'); ?>
@@ -176,6 +201,36 @@ else {
 			<?php echo $form->textField($model,'name', !is_null($profiles) ? array('size'=>20) : array('size'=>20, 'disabled' => 'disabled')); ?>
 			<?php if (is_null($profiles)) echo '<span style="font-size: 70%;">(readonly)</span>'; ?>
 			<?php echo $form->error($model,'name'); ?>
+		</div>
+		<br/>
+		<div class="row">
+<?php
+if (!is_null($operatingsystems)) {
+?>		
+			<div class="column span-4">
+				<?php echo $form->labelEx($model,'os'); ?>
+				<?php echo $form->hiddenField($model, 'os', ''); ?>
+				<?php echo CHtml::textField('os', '', array('size'=>20, 'disabled' => 'disabled')); ?>
+				<?php echo '<span style="font-size: 70%;">(readonly)</span>'; ?>
+			</div>
+			<div class="column span-4">
+				<?php echo $form->labelEx($model,'ostype'); ?>
+				<?php echo $form->dropDownList($model,'ostype', array(), array('prompt'=>'')); ?>
+				<?php echo $form->error($model,'ostype'); ?>
+			</div>
+			<div class="column span-4">
+				<?php echo $form->labelEx($model,'osversion'); ?>
+				<?php echo $form->dropDownList($model,'osversion', array(), array('prompt'=>'')); ?>
+				<?php echo $form->error($model,'osversion'); ?>
+			</div>
+<?php 
+}
+else {
+	echo $form->labelEx($model,'os');
+	echo CHTML::textField('os', $model->os . ' ' . $model->ostype . ' ' . $model->osversion, array('size'=>20, 'disabled' => 'disabled'));
+	echo '<span style="font-size: 70%;">(readonly)</span>';
+}
+?>
 		</div>
 		<br/>
 		<div class="row">

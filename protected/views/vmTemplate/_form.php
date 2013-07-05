@@ -78,7 +78,7 @@ if (!is_null($profiles)) { // This is for creation
 			success: function(data){
 				$('#hidestep2').css('display', 'none');
 				$('#VmTemplateForm_path').val(data['path']);
-				$('#VmTemplateForm_name').val(data['name']);
+				//$('#VmTemplateForm_name').val(data['name']);
 				$('#VmTemplateForm_description').val(data['description']);
 				$('#VmTemplateForm_sstMemory').val(data['memorydefault']);
 				$('#VmTemplateForm_sstVolumeCapacity').val(data['volumecapacitydefault']);
@@ -116,6 +116,11 @@ if (!is_null($profiles)) { // This is for creation
 				$('#sstVolumeCapacityMin_display').html(getHumanSize(data['volumecapacitymin']));
 				$('#sstVolumeCapacityMax_display').html(getHumanSize(data['volumecapacitymax']));
 
+				$('#os').val(data['osall']);
+				$('#VmTemplateForm_os').val(data['os']);
+				$('#VmTemplateForm_ostype').val(data['ostype']);
+				$('#VmTemplateForm_osversion').val(data['osversion']);
+						
 				$('#submit').removeAttr('disabled');
 			},
 		});
@@ -136,7 +141,7 @@ EOS
 	<div id="errormessage" class="errorMessage">
 		<?php echo $form->errorSummary($model); ?>
 	</div>
-	<div id="step1" class="column span-7">
+	<div id="step1" class="column span-8">
 		<div class="step"><?= Yii::t('vmtemplate', 'step1');?> <p><?=Yii::t('vmtemplate', 'step1text');?></p></div>
 		<div class="row">
 			<?php echo $form->labelEx($model,'profile'); ?>
@@ -151,7 +156,7 @@ EOS
 ?>
 		</div>
 	</div>
-	<div id="step2" class="column span-10">
+	<div id="step2" class="column span-13 last">
 		<div class="step"><?= Yii::t('vmtemplate', 'step2');?> <p><?=Yii::t('vmtemplate', 'step2text');?></p></div>
 		<div class="row">
 			<?php echo $form->labelEx($model,'vmpool'); ?>
@@ -243,8 +248,21 @@ EOS
 ?>
 		<div class="row">
 			<?php echo $form->labelEx($model,'name'); ?>
-			<?php echo $form->textField($model,'name',array('size'=>20)); ?>
+			<?php echo CHtml::textField('name', $model->name, array('size'=>30, 'disabled' => 'disabled')); ?>
+				<?php echo '<span style="font-size: 70%;">(readonly)</span>'; ?>
+			<?php echo $form->hiddenField($model,'name'); ?>
+			<?php echo $form->hiddenField($model,'domainname'); ?>
+			<?php echo $form->hiddenField($model,'hostname'); ?>
 			<?php echo $form->error($model,'name'); ?>
+		</div>
+		<br/>
+		<div class="row">
+			<?php echo $form->labelEx($model,'os'); ?>
+			<?php echo $form->hiddenField($model, 'os', ''); ?>
+			<?php echo $form->hiddenField($model, 'ostype', ''); ?>
+			<?php echo $form->hiddenField($model, 'osversion', ''); ?>
+			<?php echo CHtml::textField('os', '', array('size'=>20, 'disabled' => 'disabled')); ?>
+			<?php echo '<span style="font-size: 70%;">(readonly)</span>'; ?>
 		</div>
 		<br/>
 		<div class="row">

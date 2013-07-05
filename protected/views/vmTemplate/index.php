@@ -616,10 +616,15 @@ EOS
 , CClientScript::POS_END);
 
 $selectStaticGuiUrl = $this->createUrl('vmTemplate/getStaticPoolGui');
-$selectStaticTxt = Yii::t('vm', 'Create persistent VM');
+$selectStaticTxt = Yii::t('vmtemplate', 'Create persistent VM');
+$selectStaticOkButtonTxt = Yii::t('vmtemplate', 'Create');
+$selectStaticCancelButtonTxt = Yii::t('vmtemplate', 'Cancel');
+
+$getPersistentCreationDataUrl = $this->createUrl('vmTemplate/getPersistentCreationData');
 
 Yii::app()->clientScript->registerScript('finish', <<<EOS
-function finish(id, pooldn, name, subtype, domainname, hostname)
+//function finish(id, pooldn, name, subtype, domainname, hostname)
+function finish(id, formdata)
 {
 	$('#selectStaticButton').attr('disabled', 'disabled');
 	$('#selectStaticButton').addClass('ui-state-disabled');
@@ -630,35 +635,33 @@ function finish(id, pooldn, name, subtype, domainname, hostname)
 	$('#{$gridid}_grid').setCell(id, 'status', 'migrating', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
 	$('#errorSelectStatic').css('display', 'none');
 	$('#infoSelectStatic').css('display', 'block');
-	$('#infoSelectStaticMsg').html('<img src="{$imagesurl}/loading.gif" alt=""/> Create persistent VM');
+	$('#infoSelectStaticMsg').html('<img src="{$imagesurl}/loading.gif" alt=""/>{$selectStaticTxt}');
 	$.ajax({
+		type: "POST",
 		url: "{$baseurl}/vmTemplate/finish",
 		cache: false,
-		dataType: 'xml',
-		data: 'dn=' + row['dn'] + '&pool=' + pooldn + '&name=' + name + '&subtype=' + subtype + '&domainname=' + domainname + '&hostname=' + hostname,
-		success: function(xml){
-			var err = $(xml).find('error');
-			err = err.text();
-			if (0 != err) {
+		dataType: 'json',
+		//data: 'dn=' + row['dn'] + '&pool=' + pooldn + '&name=' + name + '&subtype=' + subtype + '&domainname=' + domainname + '&hostname=' + hostname,
+		data: 'dn=' + row['dn'] + '&' + formdata,
+		success: function(data) {
+			if (0 != data.error) {
 				$('#infoSelectStatic').css('display', 'none');
 				$('#errorSelectStatic').css('display', 'block');
-				$('#errorSelectStaticMsg').html($(xml).find('message').text());
+				$('#errorSelectStaticMsg').html(data.message);
 				if (2 == err) {
 					$('#selectStaticButton').removeAttr('disabled');
 					$('#selectStaticButton').removeClass('ui-state-disabled');
 				}
 			}
 			else {
-				var message = $(xml).find('message');
-				message = message.text();
+				message = data.message;
 				if ('' != message) {
 					$('#errorSelectStatic').css('display', 'none');
 					$('#infoSelectStatic').css('display', 'block');
 					$('#infoSelectStaticMsg').html(message);
 				}
 				else {
-					var url = $(xml).find('url');
-					url = url.text();
+					var url = data.url;
 					window.location.replace(url);
 				}
 			}
@@ -669,40 +672,56 @@ function finish(id, pooldn, name, subtype, domainname, hostname)
 function selectStaticPool(id)
 {
 	var row = $('#{$gridid}_grid').getRowData(id);
-	$('#selectStaticPool').fancybox({
-		'modal'			: false,
-		'href'			: '{$selectStaticGuiUrl}?name=' + row['name'],
-		'type'			: 'inline',
-		'autoDimensions': true,
-		//'width'		: 320,
-		//'height'		: 320,
-		'scrolling'		: 'no',
-		'onComplete'	: function() {
-			$('#staticpoolSelection_singleselect').singleselect({
-				'sorted':true,
-				'header':'Pools',
-			});
-
-			$('#selectStaticButton').button({icons: {primary: "ui-icon-disk"}, label: '{$selectStaticTxt}'})
-			.click(function() {
-				var selected = $('#staticpoolSelection_singleselect').singleselect("values");
-				var subtype = '???';
-				if ( $('#radiosubtype1').attr('checked')) {
-					subtype = $('#radiosubtype1').val();
+	$("#finishdialog").dialog({
+		resizable: true,
+		width: 'auto',
+		height: 'auto',
+		modal: true,
+		open: function(event, ui) {
+			$.get('{$getPersistentCreationDataUrl}', {'dn': row['dn']}, function(data) {
+				$("#finishId").val(id);
+				// defined as 'global'
+				softwarestacks = data.stacks;
+				if (0 < data.length) {
+					$("#finishStack").empty().append($('<option value=""></option>'));
+					$.each(softwarestacks, function(key, val) {
+						$("#finishStack").append($('<option value="' + key + '">' + val.name + '</option>'));
+					});
 				}
-				else if ( $('#radiosubtype2').attr('checked')) {
-					subtype = $('#radiosubtype2').val();
-				}
-				finish(id, selected[0], $('#displayname').val(), subtype, $('#hostname').val(), $('#domainname').val());
-				//migrateVm(id, selected[0]);
-				//$.fancybox.close();
-			});
+				else {
+					$("#finishStack").empty().append($('<option value="???"></option>')).prop('dsabled', true);
+					$("#finishEnv").empty().prop('dsabled', true);
+				}			
+			}, 'json');
 		},
-		'onClosed'	: function() {
-			$('#selectStaticPool').hide();
-		}
+		buttons:  [
+			{
+				text: '{$selectStaticOkButtonTxt}',
+				id: 'selectStaticOkButton',
+				click: function() {
+// 					var pool = $("#staticpoolSelection").val();
+// 					var node = $("#staticnodeSelection").val();
+// 					var subtype = '???';
+// 					if ( $('#radiosubtype1').attr('checked')) {
+// 						subtype = $('#radiosubtype1').val();
+// 					}
+// 					else if ( $('#radiosubtype2').attr('checked')) {
+// 						subtype = $('#radiosubtype2').val();
+// 					}
+//					finish(id, selected[0], $('#displayname').val(), subtype, $('#hostname').val(), $('#domainname').val());
+					var a = $("#finishForm");
+					var b = $("#finishForm").serialize();
+					finish($("#finishId").val(), $("#finishForm").serialize());
+				}
+			},
+			{
+				text: '{$selectStaticCancelButtonTxt}',
+				click: function() {
+					$(this).dialog('close');
+				}
+			}
+		]
 	});
-	$('#selectStaticPool').trigger('click');
 }
 EOS
 , CClientScript::POS_END);
@@ -994,6 +1013,95 @@ EOS
 	<span class="ui-icon ui-icon-notice" style="float:left; margin:0 7px 0 0;"></span>
 	<div id="vmdialogtext"></div>
 </div>
+<div id="finishdialog" title="<?php echo Yii::t('vm', 'Create persistent VM'); ?>" style="display: none;">
+<form id="finishForm">
+<?php 
+	//$name = isset($_GET['name']) ? $_GET['name'] : '';
+	$config = LdapConfigurationHostname::model()->findAll(array('filterName' => 'all'));
+	$hostname = $config[0]->getNextHostname();
+	 
+	$name = $hostname . '.' . $config[0]->sstNetworkDomainName;
+	
+	Yii::app()->clientScript->registerScript('finishdialog', <<<EOS
+$("#finishPool").change(function() {
+	var value = $(this).val();
+	$("#finishNode").empty().append($('<option value=""></option>'));
+	if ('' != value) {
+	 	var nodes = persistentpools[value]['nodes'];
+	 	$.each(nodes, function(key, val) {
+			$("#finishNode").append($('<option value="' + key + '">' + val + '</option>'));
+		});
+ 	}
+});
+$("#finishStack").change(function() {
+	var value = $(this).val();
+	$("#finishEnv").empty().append($('<option value=""></option>'));
+	if ('' != value) {
+ 		var envs = softwarestacks[value]['env'];
+		$.each(envs, function(key, val) {
+			$("#finishEnv").append($('<option value="' + key + '">' + val + '</option>'));
+		});
+ 	}
+});
+EOS
+, CClientScript::POS_READY);
+	
+	$ppools = CJSON::encode($persistentpools);
+	
+	Yii::app()->clientScript->registerScript('finishdialog2', <<<EOS
+	var persistentpools =  $.parseJSON('{$ppools}');
+	var softwarestacks = null;
+EOS
+, CClientScript::POS_END);
+	
+	$parray = array();
+	foreach($persistentpools as $key => $pool) {
+		$parray[$key] = $pool['name'];
+	}
+?>
+		<?php echo CHtml::hiddenField('FinishForm[id]','', array('id' => 'finishId')); ?>
+		<div>
+			<label for="finishPool" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationPool'); ?> </label>
+			<?php echo CHtml::dropDownList('FinishForm[pool]', '', $parray, array('prompt' => '', 'id' => 'finishPool')); ?>
+		</div>
+		<br/>
+		<div>
+			<label for="finishNode" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationNode'); ?> </label>
+			<?php echo CHtml::dropDownList('FinishForm[node]', '', array(), array('prompt' => '', 'id' => 'finishNode')); ?>
+		</div>
+		<br/>
+		<div>
+			<label for="displayname" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationName'); ?> </label>
+			<input type="text" id="displayname" name="displayname" disabled="disabled" value="<?php echo $name; ?>"/>
+			<input type="hidden" id="finishDisplayname" name="FinishForm[displayname]" value="<?php echo $name; ?>"/>
+			<input type="hidden" id="finishHostname" name="FinishForm[hostname]" value="<?php echo $hostname; ?>" />
+			<input type="hidden" id="finishDomainname" name="FinishForm[domainname]" value="<?php echo $config[0]->sstNetworkDomainName; ?>" />
+		</div>
+		<br/>
+		<div id="radiosubtype" style="">
+			<label style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationType'); ?> </label>
+			<input type="radio" id="radiosubtype1" name="FinishForm[subtype]" value="Server" checked="checked" /><label for="radiosubtype1">Server</label>
+			<input type="radio" id="radiosubtype2" name="FinishForm[subtype]" value="Desktop" /><label for="radiosubtype2">Desktop</label>
+		</div>
+		<br/>
+		<div>
+			<label for="finishStack" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationSoftwareStack'); ?> </label>
+			<?php echo CHtml::dropDownList('FinishForm[stack]', '', array(), array('prompt' => '', 'id' => 'finishStack')); ?>
+		</div>
+		<br/>
+		<div>
+			<label for="finishEnv" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationEnvironment'); ?> </label>
+			<?php echo CHtml::dropDownList('FinishForm[env]', '', array(), array('prompt' => '', 'id' => 'finishEnv')); ?>
+		</div>
+		<div id="errorSelectStatic" class="ui-state-error ui-corner-all" style="display: block; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorSelectStaticMsg" style="display: block;"></span></p>
+		</div>
+		<div id="infoSelectStatic" class="ui-state-highlight ui-corner-all" style="display: block; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoSelectStaticMsg"></span></p>
+		</div>
+</form>
+</div>
+<?php /* ?>
 <div style="display: none;">
 	<a id="startStaticPool" href="#selectStaticPool">start finish</a>
 	<div id="selectStaticPool">
@@ -1014,6 +1122,7 @@ EOS
 		'cssFile' => 'singleselect.css',
 	));
 ?>
+<?php */ ?>
 <div style="display: none;">
 	<a id="startDynamicPool" href="#selectDynamicPool">start finish dyn</a>
 	<div id="selectDynamicPool">

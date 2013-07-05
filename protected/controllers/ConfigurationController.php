@@ -172,6 +172,16 @@ class ConfigurationController extends Controller
 			));
 		}
 	}
+
+	public function actionOperatingSystem() {
+		$this->render('operatingsystem', array('operatingsystems' => LdapConfigurationOperatingSystem::model()->findAll(array('attr'=>array()))));		
+	}
+
+	public function actionDeleteOsPart($uid, $dn) {
+		$server = CLdapServer::getInstance();
+		$this->sendJsonAnswer($server->delete($dn, true));
+	}
+
 	
 	/**
 	 * Performs the AJAX validation.

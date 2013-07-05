@@ -101,11 +101,12 @@ class VmTemplateController extends Controller
 	{
 		return array(
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-		        	'actions'=>array('index', 'view', 'create', 'update', 'delete', 'finish', 'finishDynamic',
+				'actions'=>array('index', 'view', 'create', 'update', 'delete', 'finish', 'finishDynamic',
 					'getDefaults', 'getVmInfo', 'getVmTemplates', 'refreshVMs', 'getNodeGui',
-              				'saveVm', 'startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm', 'toogleBoot',
-					'getCheckCopyGui', 'checkCopy', 'getDynData', 'getStaticPoolGui', 'getDynamicPoolGui', 'restoreVm', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction'),
-		        	'users'=>array('@'),
+					'saveVm', 'startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm', 'toogleBoot',
+					'getCheckCopyGui', 'checkCopy', 'getDynData', 'getStaticPoolGui', 'getDynamicPoolGui', 'restoreVm', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction',
+					'setMachineMode', 'getPersistentCreationData'),
+		        'users'=>array('@'),
 				'expression'=>'Yii::app()->user->isAdmin'
 			),
 			array('deny',  // deny all users
@@ -114,7 +115,23 @@ class VmTemplateController extends Controller
 		);
 	}
 	public function actionIndex() {
-		$this->render('index', array('copyaction' => isset($_GET['copyaction']) ? $_GET['copyaction'] : null));
+		$persistentpools = array();
+		$ldappools = CLdapRecord::model('LdapVmPool')->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'persistent')));
+		foreach ($ldappools as $pool) {
+			$persistentpools[$pool->dn] = array();
+			$persistentpools[$pool->dn]['name'] = $pool->sstDisplayName; //array('name' => $pool->sstDisplayName);
+			$persistentpools[$pool->dn]['nodes'] = array();
+			foreach($pool->nodes as $poolnode) {
+				$node = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $poolnode->ou))));
+				if (!is_null($node)) {
+					$nodetype = $node->getType('VM-Node');
+					if (!is_null($nodetype) && 'maintenance' != $nodetype->sstNodeState) {
+						$persistentpools[$pool->dn]['nodes'][$node->sstNode] = $node->sstNode;
+					}
+				}
+			}
+		}
+		$this->render('index', array('persistentpools' => $persistentpools, 'copyaction' => isset($_GET['copyaction']) ? $_GET['copyaction'] : null));
 	}
 
 	public function actionView() {
@@ -129,6 +146,15 @@ class VmTemplateController extends Controller
 		if(isset($_POST['VmTemplateForm'])) {
 			$model->attributes = $_POST['VmTemplateForm'];
 			$parts = explode('°', $_POST['VmTemplateForm']['path']);
+			
+			$os = LdapVmOperatingSystem::model();
+			$os->ou = 'operating system';
+			$os->sstOperatingSystem = $model->os;
+			$os->sstOperatingSystemType = $model->ostype;
+			$os->sstOperatingSystemVersion = $model->osversion;
+			$os->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
+			$os->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+				
 /*
 			$subnets = CLdapRecord::model('LdapDhcpSubnet')->findAll(array('attr'=>array()));
 			if (0 == count($subnets)) {
@@ -202,6 +228,8 @@ class VmTemplateController extends Controller
 				}
 				if ('TBD_GUI' == $result->sstDisplayName) {
 					$result->sstDisplayName = $model->name;
+					$result->sstNetworkHostname = $model->hostname;
+					$result->sstNetworkDomainName = $model->domainname;
 				}
 				if ('TBD_GUI' == $result->sstNode) {
 					$result->sstNode = $model->node;
@@ -225,10 +253,13 @@ class VmTemplateController extends Controller
 				$templatevm->removeAttribute(array('objectClass', 'member'));
 				$templatevm->setBranchDn('ou=virtual machines,ou=virtualization,ou=services');
 
+				$templatevm->sstVirtualMachineMode = 'first installation';
 				$templatevm->sstSpicePort = CPhpLibvirt::getInstance()->nextSpicePort($node->sstNode);
 				$templatevm->sstSpicePassword = CPhpLibvirt::getInstance()->generateSpicePassword();
 				$templatevm->save();
-
+				$os->setBranchDn($templatevm->dn);
+				$os->save();
+				
 				// Workaround to get Node
 				$templatevm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($templatevm->getDn());
 
@@ -303,6 +334,13 @@ class VmTemplateController extends Controller
 			}
 		}
 		if (!isset($_POST['VmTemplateForm']) || $hasError) {
+			if (!$hasError) {
+				$config = LdapConfigurationHostname::model()->findAll(array('filterName' => 'all'));
+				$model->hostname = $config[0]->getNextHostname();
+				$model->domainname = $config[0]->sstNetworkDomainName;
+				$model->name = $model->hostname . '.' . $model->domainname;
+			}
+							
 			$vmpools = array();
 			$criteria = array('attr'=>array('sstVirtualMachinePoolType'=>'template'));
 			//$criteria = array('filter'=>'(|(sstVirtualMachinePoolType=template)(sstVirtualMachinePoolType=static)(sstVirtualMachinePoolType=dynamic))');
@@ -430,6 +468,18 @@ class VmTemplateController extends Controller
 				$model->sstVolumeCapacity = $defaults->VolumeCapacityMin;
 			}
 
+			$os = $vm->operatingsystem;
+			if (!is_null($os)) {
+				$model->os = $os->sstOperatingSystem;
+				$model->ostype = $os->sstOperatingSystemType;
+				$model->osversion = $os->sstOperatingSystemVersion;
+			}
+			else {
+				$model->os = 'OS?';
+				$model->ostype = 'Type?';
+				$model->osversion = 'Version?';
+			}
+				
 			$this->render('update',array(
 				'model' => $model,
 				'vmpools' => $this->createDropdownFromLdapRecords($vmpools, 'sstVirtualMachinePool', 'sstDisplayName'),
@@ -491,42 +541,72 @@ class VmTemplateController extends Controller
 
 	public function actionFinish() {
 		$this->disableWebLogRoutes();
-		if (isset($_GET['dn']) && isset($_GET['pool'])) {
-			$result = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_GET['dn']);
-			//$pools = CLdapRecord::model('LdapVmPool')->findAll( array('attr'=>array()));
-			//$result->sstVirtualMachinePool = $pools[0]->sstVirtualMachinePool;
+		//echo '<pre>' . print_r($_POST, true) . '</pre>';
+		if (isset($_POST['dn'])) {
+			$finishForm = $_POST['FinishForm'];
+			if (!isset($finishForm['pool']) || '' == $finishForm['pool']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a pool!')));
+				Yii::app()->end();
+			}
+			if (!isset($finishForm['node']) || '' == $finishForm['node']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a node!')));
+				Yii::app()->end();
+			}
+			if (!isset($finishForm['stack']) || '' == $finishForm['stack']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a software stack!')));
+				Yii::app()->end();
+			}
+			if (!isset($finishForm['env']) || '' == $finishForm['env']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select an environment!')));
+				Yii::app()->end();
+			}
 
-			if ('undefined' == $_GET['pool']) {
-				$this->sendAjaxAnswer(array('error' => 2, 'message' => 'Please select a pool!'));
-				return;
+			$vmpool = LdapVmPool::model()->findByDn($finishForm['pool']);
+			if (is_null($vmpool)) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Pool not found!')));
+				Yii::app()->end();
 			}
-			if ('undefined' == $_GET['subtype']) {
-				$this->sendAjaxAnswer(array('error' => 2, 'message' => 'Please select a type!'));
-				return;
-			}
-			$vmpool = CLdapRecord::model('LdapVmPool')->findByDn($_GET['pool']);
 			$storagepool = $vmpool->getStoragePool();
 			if (is_null($storagepool)) {
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No storagepool found for selected vmpool!')));
-				return;
+				$this->sendJsonAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No storagepool found for selected vmpool!')));
+				Yii::app()->end();
 			}
-			$poolNodes = $vmpool->nodes;
-			$usedNode = null;
-			foreach($poolNodes as $poolNode) {
-				$node = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $poolNode->ou))));
-				if (!is_null($node)) {
-					$nodetype = $node->getType('VM-Node');
-					if (!is_null($nodetype) && 'maintenance' != $nodetype->sstNodeState) {
-						$usedNode = $node;
-						break;
-					}
-				}
-			}
-			if (is_null($usedNode)) {
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No active node found for selected vmpool!')));
-				return;
+			$usedNode = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $finishForm['node']))));
+			if (is_null($storagepool)) {
+				$this->sendJsonAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'Node not found!')));
+				Yii::app()->end();
 			}
 				
+			$result = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_POST['dn']);
+
+			$os = null;
+			if (isset($result->operatingsystem)) {
+				$os = LdapVmOperatingSystem::model();
+				$os->ou = 'operating system';
+				$os->sstOperatingSystem = $result->operatingsystem->sstOperatingSystem;
+				$os->sstOperatingSystemType = $result->operatingsystem->sstOperatingSystemType;
+				$os->sstOperatingSystemVersion = $result->operatingsystem->sstOperatingSystemVersion;
+				$os->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
+				$os->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+			}			
+			$vmstack = null;
+			$stack = LdapConfigurationSoftwareStack::model()->findByDn($finishForm['stack']);
+			if (!is_null($stack)) {
+				$vmstack = LdapVmSoftwareStack::model();
+				$vmstack->ou = 'software stack';
+				$vmstack->sstDisplayName = $stack->sstDisplayName;
+				$vmstack->description = $stack->description;
+				$vmstack->labeledURI = 'ldap:///' . $finishForm['stack'];
+				$vmstack->sstEnvironmentName = $finishForm['env'];
+				
+				$vmstack->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
+				$vmstack->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+			}
+			else {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Software stack not found!')));
+				Yii::app()->end();
+			}
+
 			// 'save' devices before
 			$rdevices = $result->devices;
 			/* Create a copy to be sure that we will write a new record */
@@ -536,20 +616,20 @@ class VmTemplateController extends Controller
 			$vm->setOverwrite(true);
 			$vm->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 				
-			if (isset($_GET['name']) && '' != $_GET['name']) {
-				$vm->sstDisplayName = $_GET['name'];
+			if (isset($finishForm['name']) && '' != $finishForm['name']) {
+				$vm->sstDisplayName = $finishForm['name'];
 			}
-			if (isset($_GET['hostname']) && '' != $_GET['hostname']) {
-				$vm->sstNetworkHostname = $_GET['hostname'];
+			if (isset($finishForm['hostname']) && '' != $finishForm['hostname']) {
+				$vm->sstNetworkHostname = $finishForm['hostname'];
 			}
-			if (isset($_GET['domainname']) && '' != $_GET['domainname']) {
-				$vm->sstNetworkDomainName = $_GET['domainname'];
+			if (isset($finishForm['domainname']) && '' != $finishForm['domainname']) {
+				$vm->sstNetworkDomainName = $finishForm['domainname'];
 			}
 			$vm->sstVirtualMachineType = 'persistent';
-			$vm->sstVirtualMachineSubType = $_GET['subtype'];
+			$vm->sstVirtualMachineSubType = $finishForm['subtype'];
 			$vm->sstVirtualMachinePool = $vmpool->sstVirtualMachinePool;
 			$vm->sstNode = $usedNode->sstNode;
-			/* Delete all objectclasses and let the LdapVM set them */
+			/* Delete all objectclasses and let LdapVm set them */
 			$vm->removeAttribute(array('objectClass', 'member'));
 			$vm->setBranchDn('ou=virtual machines,ou=virtualization,ou=services');
 
@@ -559,7 +639,14 @@ class VmTemplateController extends Controller
 			$vm->sstSpicePort = CPhpLibvirt::getInstance()->nextSpicePort($vm->sstNode);
 			$vm->sstSpicePassword = CPhpLibvirt::getInstance()->generateSpicePassword();
 			$vm->save();
-
+			if (!is_null($os)) {
+				$os->setBranchDn($vm->dn);
+				$os->save();
+			}
+			if (!is_null($vmstack)) {
+				$vmstack->setBranchDn($vm->dn);
+				$vmstack->save();
+			}				
 			$settings = new LdapVmConfigurationSettings();
 			$settings->setBranchDn($vm->dn);
 			$settings->ou = "settings";
@@ -662,7 +749,7 @@ class VmTemplateController extends Controller
 			}
 		}
 		//$this->redirect(array('index', 'copyaction' => $copydata['pid']));
-		$this->sendAjaxAnswer(array('error' => 0, 'message' => 'OK')); //'url' => $this->createUrl('index')));//, array('copyaction' => $copydata['pid']))));
+		$this->sendJsonAnswer(array('error' => 0, 'message' => 'OK')); //'url' => $this->createUrl('index')));//, array('copyaction' => $copydata['pid']))));
 	}
 
 	public function actionFinishDynamic() {
@@ -851,7 +938,7 @@ class VmTemplateController extends Controller
 			else {
 				$parts = explode('°', $_GET['p']);
 				$defaults['name'] = $parts[1];
-				$profile = CLdapRecord::model('LdapVmFromProfile')->findByDn($_GET['dn']);
+				$profile = LdapVmFromProfile::model()->findByDn($_GET['dn']);
 				$defaults['description'] = $profile->description;
 				$defaults['memorydefault'] = $profile->sstMemory;
 				$defaults['cpudefault'] = $profile->sstVCPU;
@@ -871,6 +958,12 @@ class VmTemplateController extends Controller
 				$defaults['volumecapacitymin'] = $result->sstVolumeCapacityMin;
 				$defaults['volumecapacitymax'] = $result->sstVolumeCapacityMax;
 				$defaults['volumecapacitystep'] = $result->sstVolumeCapacityStep;
+				
+				$os = $profile->operatingsystem;
+				$defaults['os'] = $os->sstOperatingSystem;
+				$defaults['ostype'] = $os->sstOperatingSystemType;
+				$defaults['osversion'] = $os->sstOperatingSystemVersion;
+				$defaults['osall'] = $os->getCompleteName();
 			}
 		}
 		$s = CJSON::encode($defaults);
@@ -992,6 +1085,7 @@ class VmTemplateController extends Controller
 		$memory = $this->getHumanSize($vm->sstMemory);
 		$loading = $this->getImageBase() . '/loading.gif';
 
+		$machinemodeUrl = $this->createUrl('setMachineMode');
 		/*
 		 * with cpu graph
       <td style="text-align: right"><b>Memory:</b></td>
@@ -1007,6 +1101,38 @@ class VmTemplateController extends Controller
       <td>{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
       <td style="text-align: right"><b>VM UUID:</b></td>
       <td>{$vm->sstVirtualMachine}</td>
+      <td rowspan="3" style="padding-left: 30px; vertical-align: top;">
+      	<form id="fmachinemode_{$vm->sstVirtualMachine}" action="#">
+EOS;
+		echo CHtml::hiddenField('dn', $dn);
+		echo '<b>' . CHtml::label(Yii::t('vmtemplate', 'MachineMode'), 'machinemode') . ':</b><br/>';
+		$machinemode = $vm->sstVirtualMachineMode;
+		if (is_null($machinemode)) {
+			$machinemode = 'do not use';
+		}
+		echo CHtml::dropDownList('machinemode', $machinemode, array(
+			'maintenance mode' => Yii::t('vmtemplate', 'maintenance mode'),
+			'first installation' => Yii::t('vmtemplate', 'first installation'),
+			'ready for use' => Yii::t('vmtemplate', 'ready for use')),
+			array('id' => 'machinemode_' . $vm->sstVirtualMachine)
+		);
+		echo '<p id="asdf"></p>';
+		echo '</form>';
+		echo <<< EOS
+<script type="text/javascript">
+	$("#fmachinemode_{$vm->sstVirtualMachine}").submit(function(event) {
+		event.stopPropagation();
+		$.post('{$machinemodeUrl}', $("#fmachinemode_{$vm->sstVirtualMachine}").serialize(), function(data){
+			$("#asdf").append('set');
+		}, "json");
+	});
+	$("#machinemode_{$vm->sstVirtualMachine}").change(function() {
+		$("#fmachinemode_{$vm->sstVirtualMachine}").submit();
+	});
+</script>
+EOS;
+		echo <<< EOS
+      </td>
     </tr>
     <tr>
       <td style="text-align: right; vertical-align: top;"><b>Memory:</b></td>
@@ -1915,5 +2041,48 @@ EOS;
 	}
 	
 	public function actionHandleRestoreAction() {
+	}
+
+	public function actionSetMachineMode() {
+		Yii::log('setMachineMode: ' . $_POST['dn'], 'profile', 'vmTemplateController');
+		if (isset($_POST['dn'])) {
+			$template = LdapVmFromTemplate::model()->findByDn($_POST['dn']);
+			$template->setOverwrite(true);
+			$template->sstVirtualMachineMode = $_POST['machinemode'];
+			if ($template->save(false)) {
+				$json = array('err' => false, 'msg' => Yii::t('vmtemplate', 'Canceled'));
+			}
+			else {
+			}
+		}
+		$this->sendJsonAnswer($json);
+	}
+	
+	public function actionGetPersistentCreationData($dn) {
+		$json = array('stacks' => array());
+		$template = LdapVmFromProfile::model()->findByDn($dn);
+		$os = $template->operatingsystem;
+		$envs = LdapConfigurationSoftwareStackEnvironment::model()->findAll(array('attr' => array()));
+		$stacks = LdapConfigurationSoftwareStack::model()->findAll(array('attr' => array('labeledURI' => $os->labeledURI)));
+		$json['length'] = count($stacks);
+		foreach($stacks as $stack) {
+			$data = array();
+			$data['name'] = $stack->sstDisplayName;
+			$data['env'] = array();
+			foreach($stack->sstEnvironmentName as $name) {
+				$key = '??';
+				$envname = '??';
+				foreach($envs as $env) {
+					if ($name == $env->sstEnvironmentName) {
+						$key = $env->uid;
+						$envname = $env->sstDisplayName;
+						break;
+					}
+				}
+				$data['env'][$key] = $envname;
+			}
+			$json['stacks'][$stack->getDn()] = $data;
+		}
+		$this->sendJsonAnswer($json);
 	}
 }

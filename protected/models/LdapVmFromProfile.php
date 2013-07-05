@@ -51,8 +51,18 @@ class LdapVmFromProfile extends LdapVm {
 		return array(
 			// __construct($name,$attribute,$className,$foreignAttribute,$options=array())
 			'devices' => array(self::HAS_ONE, 'dn', 'LdapVmDevice', '$model->getDn()', array('ou' => 'devices')),
-			'defaults' => array(self::HAS_ONE_DN, 'dn', 'LdapVmDefaults', '$model->labeledURI', array(),
-		));
+			'defaults' => array(self::HAS_ONE_DN, 'dn', 'LdapVmDefaults', '$model->labeledURI', array()),
+			'operatingsystem' => array(self::HAS_ONE, 'dn', 'LdapVmOperatingSystem', '$model->getDn()', array('ou' => 'operating system')),
+		);
+	}
+
+	/**
+	 * Returns the static model of the specified LDAP class.
+	 * @return CLdapRecord the static model class
+	 */
+	public static function model($className=__CLASS__)
+	{
+		return parent::model($className);
 	}
 
 }
