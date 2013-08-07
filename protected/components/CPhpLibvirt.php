@@ -205,7 +205,7 @@ class CPhpLibvirt {
 		$xml = $this->replaceXML($xmllibvirt, $data);
 		Yii::log('migrateVm:  new XML: ' . $xml, 'profile', 'phplibvirt');
 				
-		$flags = self::$VIR_MIGRATE_LIVE | self::$VIR_MIGRATE_UNDEFINE_SOURCE | self::$VIR_MIGRATE_PEER2PEER | self::$VIR_MIGRATE_TUNNELLED | self::$VIR_MIGRATE_PERSIST_DEST | self::$VIR_MIGRATE_UNSAFE;
+		$flags = self::$VIR_MIGRATE_LIVE | self::$VIR_MIGRATE_UNDEFINE_SOURCE | self::$VIR_MIGRATE_PEER2PEER | self::$VIR_MIGRATE_TUNNELLED | self::$VIR_MIGRATE_PERSIST_DEST | self::$VIR_MIGRATE_COMPRESSED;
 // 		Yii::log('migrateVm: libvirt_domain_migrate_to_uri(' . $data['libvirt'] . ', ' . $data['newlibvirt'] . ', ' . $flags . ', ' . $data['name'] . ',0)', 'profile', 'phplibvirt');
 // 		return libvirt_domain_migrate_to_uri($domain, $data['newlibvirt'], $flags, $data['name'], 0);
 		Yii::log('migrateVm: libvirt_domain_migrate_to_uri2(' . $data['libvirt'] . ', ' . $data['newlibvirt'] . ', null, <XML>, ' . $flags . ', ' . $data['name'] . ',0)', 'profile', 'phplibvirt');
