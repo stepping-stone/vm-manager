@@ -66,7 +66,12 @@ class CPhpLibvirt {
 	public static $VIR_DOMAIN_SHUTOFF	  = 5; // the domain is shut off
 	public static $VIR_DOMAIN_CRASHED	  = 6; // the domain is crashed
 	public static $VIR_DOMAIN_PMSUSPENDED	  = 7; // the domain is suspended by guest power management
-	
+
+	public static $VIR_DOMAIN_XML_SECURE     = 1; // dump security sensitive information too
+	public static $VIR_DOMAIN_XML_INACTIVE   = 2; // dump inactive domain information
+	public static $VIR_DOMAIN_XML_UPDATE_CPU = 4; // update guest CPU requirements according to host CPU
+	public static $VIR_DOMAIN_XML_MIGRATABLE = 8; // dump XML suitable for migration
+
 	public static $VIR_MIGRATE_LIVE              =    1; // live migration
 	public static $VIR_MIGRATE_PEER2PEER         =    2; // direct source -> dest host control channel Note the less-common spelling that we're stuck with: VIR_MIGRATE_TUNNELLED should be VIR_MIGRATE_TUNNELED
 	public static $VIR_MIGRATE_TUNNELLED         =    4; // tunnel migration data over libvirtd connection
@@ -195,7 +200,7 @@ class CPhpLibvirt {
 		Yii::log('migrateVm: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
 		$domain = libvirt_domain_lookup_by_name($con, $data['name']);
 		Yii::log('migrateVm: libvirt_domain_get_xml_desc(' . $data['libvirt'] . ',NULL)', 'profile', 'phplibvirt');
-		$xmllibvirt = libvirt_domain_get_xml_desc($domain, NULL);
+		$xmllibvirt = libvirt_domain_get_xml_desc($domain, NULL, self::$VIR_DOMAIN_XML_SECURE);
 		Yii::log('migrateVm: orig XML: ' . $xmllibvirt, 'profile', 'phplibvirt');
 		$xml = $this->replaceXML($xmllibvirt, $data);
 		Yii::log('migrateVm:  new XML: ' . $xml, 'profile', 'phplibvirt');
