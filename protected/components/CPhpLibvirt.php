@@ -280,6 +280,7 @@ class CPhpLibvirt {
 	<uuid>{$data[\'sstUuid\']}</uuid>
 	<memory>{$data[\'sstMemory\']}</memory>
 	<vcpu>{$data[\'sstVCPU\']}</vcpu>
+	<cpu mode=\'host-model\'/>
 	<os>
 		<type arch=\"{$data[\'sstOSArchitecture\']}\" machine=\"{$data[\'sstOSMachine\']}\">{$data[\'sstOSType\']}</type>
 		<boot dev=\"{$data[\'sstOSBootDevice\']}\"/>
