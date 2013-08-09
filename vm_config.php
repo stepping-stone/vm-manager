@@ -64,7 +64,7 @@ return array(
 			'bind_rdn' => 'cn=admin,dc=devroom,dc=de',
 			'bind_pwd' => 'flinx',
 			'base_dn' => 'dc=devroom,dc=de',
-			'passwordtype' => 'SHA',
+			'passwordtype' => 'SSHA',
 		),
 	),
 
