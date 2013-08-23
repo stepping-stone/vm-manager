@@ -327,6 +327,18 @@ class CPhpLibvirt {
 </domain>
 ';
 
+    private function generateTargetInterfaceName($hostname, $interfacealias) {
+        // Try to extract the digit from $interfacealias, assuming
+        // that it is something like 'netN' where N=0,1,2,...
+        // Then return '$hostname_N' as the interface name.
+        // If it fails, return the $interfacealias.
+        if (preg_match('/(?P<prefix>\w+)(?P<digit>\d+)/', $interfacealias, $matches)) {
+            return ( $hostname . '_' . $matches['digit'] );
+        } else {
+            return $interfacealias;
+        }
+    }
+
 	public function getXML($data) {
 		$data['sstMemory'] = floor($data['sstMemory'] / 1024);
 		$features = '';
@@ -353,6 +365,7 @@ class CPhpLibvirt {
 		}
 		foreach($data['devices']['interfaces'] as $interface) {
 			$devices .= '		<interface type="' . $interface['sstType'] . '">' . "\n";
+			$devices .= '			<target dev="' . $this->generateTargetInterfaceName($data['sstNetworkHostname'], $interface['sstInterface']) . '"/>' . "\n";
 			$devices .= '			<source bridge="' . $interface['sstSourceBridge'] . '"/>' . "\n";
 			$devices .= '			<mac address="' . $interface['sstMacAddress'] . '"/>' . "\n";
 			$devices .= '			<model type="' . $interface['sstModelType'] . '"/>' . "\n";
