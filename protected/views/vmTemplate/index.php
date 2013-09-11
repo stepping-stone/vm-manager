@@ -648,7 +648,7 @@ function finish(id, formdata)
 				$('#infoSelectStatic').css('display', 'none');
 				$('#errorSelectStatic').css('display', 'block');
 				$('#errorSelectStaticMsg').html(data.message);
-				if (2 == err) {
+				if (2 == data.error) {
 					$('#selectStaticButton').removeAttr('disabled');
 					$('#selectStaticButton').removeClass('ui-state-disabled');
 				}
@@ -682,15 +682,16 @@ function selectStaticPool(id)
 				$("#finishId").val(id);
 				// defined as 'global'
 				softwarestacks = data.stacks;
-				if (0 < data.length) {
-					$("#finishStack").empty().append($('<option value=""></option>'));
+				if (null != softwarestacks) {
+					$("#finishStack").empty().prop('disabled', false).append($('<option value=""></option>'));
 					$.each(softwarestacks, function(key, val) {
 						$("#finishStack").append($('<option value="' + key + '">' + val.name + '</option>'));
 					});
+					$("#finishEnv").empty().prop('disabled', false);
 				}
 				else {
-					$("#finishStack").empty().append($('<option value="???"></option>')).prop('dsabled', true);
-					$("#finishEnv").empty().prop('dsabled', true);
+					$("#finishStack").empty().prop('disabled', true);
+					$("#finishEnv").empty().prop('disabled', true);
 				}			
 			}, 'json');
 		},
@@ -1093,10 +1094,10 @@ EOS
 			<label for="finishEnv" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationEnvironment'); ?> </label>
 			<?php echo CHtml::dropDownList('FinishForm[env]', '', array(), array('prompt' => '', 'id' => 'finishEnv')); ?>
 		</div>
-		<div id="errorSelectStatic" class="ui-state-error ui-corner-all" style="display: block; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+		<div id="errorSelectStatic" class="ui-state-error ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorSelectStaticMsg" style="display: block;"></span></p>
 		</div>
-		<div id="infoSelectStatic" class="ui-state-highlight ui-corner-all" style="display: block; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+		<div id="infoSelectStatic" class="ui-state-highlight ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoSelectStaticMsg"></span></p>
 		</div>
 </form>

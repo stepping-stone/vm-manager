@@ -67,14 +67,20 @@ function getTreeData($data, $i=0, $id='') {
 }
 
 if (!is_null($profiles)) { // This is for creation
+	$osnotfound = Yii::t('profile', 'OS missing.<br/>Please fix this error and edit OS data for selected <a href="{url}">VM Profile</a>.', array('{url}' => $this->createUrl('vmProfile/update', array('dn' => '{dn}', 'vm' => '{vm}'))));
 	$treedata = getTreeData($profiles);
 	Yii::app()->clientScript->registerScript('profiletree', <<<EOS
 	$('#templatetree input[type="radio"]').change(function (e) {
+		var dn = e.target.value;
+		var pattern = new RegExp('(^sstVirtualMachine=[^,]*,ou=[^,]*,ou=[^,]*),(.*)$');
+		var match = dn.match(pattern);
+		var vmpart = match[1];
+		var profilepart = match[2];
 		$.ajax({
 			url: "{$this->createUrl('vmTemplate/getDefaults')}",
 			cache: false,
 			dataType: "json",
-			data: "dn=" + encodeURIComponent(e.target.value) + "&p=" + encodeURIComponent(e.target.id),
+			data: "dn=" + encodeURIComponent(dn) + "&p=" + encodeURIComponent(e.target.id),
 			success: function(data){
 				$('#hidestep2').css('display', 'none');
 				$('#VmTemplateForm_path').val(data['path']);
@@ -116,11 +122,24 @@ if (!is_null($profiles)) { // This is for creation
 				$('#sstVolumeCapacityMin_display').html(getHumanSize(data['volumecapacitymin']));
 				$('#sstVolumeCapacityMax_display').html(getHumanSize(data['volumecapacitymax']));
 
-				$('#os').val(data['osall']);
-				$('#VmTemplateForm_os').val(data['os']);
-				$('#VmTemplateForm_ostype').val(data['ostype']);
-				$('#VmTemplateForm_osversion').val(data['osversion']);
-						
+				if (null != data['os']) {
+					$('#os').show().next().show();
+					$('#VmTemplateForm_os_em_').hide().html('');
+					$('#os').val(data['osall']);
+					$('#VmTemplateForm_os').val(data['os']);
+					$('#VmTemplateForm_ostype').val(data['ostype']);
+					$('#VmTemplateForm_osversion').val(data['osversion']);
+					$('div.buttons > input').prop('disabled', false);
+				}
+				else {
+					$('#os').hide().next().hide();
+					var text = '{$osnotfound}';
+					text = text.replace('%7Bdn%7D', encodeURIComponent(profilepart));
+					text = text.replace('%7Bvm%7D', encodeURIComponent(vmpart));
+					$('#VmTemplateForm_os_em_').show().html(text);
+					var a = $('div.buttons > input');
+					$('div.buttons > input').prop('disabled', true);
+				}						
 				$('#submit').removeAttr('disabled');
 			},
 		});
@@ -263,6 +282,7 @@ EOS
 			<?php echo $form->hiddenField($model, 'osversion', ''); ?>
 			<?php echo CHtml::textField('os', '', array('size'=>20, 'disabled' => 'disabled')); ?>
 			<?php echo '<span style="font-size: 70%;">(readonly)</span>'; ?>
+			<?php echo $form->error($model,'os'); ?>
 		</div>
 		<br/>
 		<div class="row">

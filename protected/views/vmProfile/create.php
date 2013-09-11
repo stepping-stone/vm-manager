@@ -35,4 +35,7 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('vmprofile', 'Create VMProfile');
 //$this->helpurl = Yii::t('help', 'createVmProfile');
 
-echo $this->renderPartial('_form', array('model'=>$model,'isofiles'=>$isofiles,'profiles' =>$profiles,'defaults'=>$defaults,'operatingsystems' =>$operatingsystems,'submittext'=>Yii::t('vmprofile','Create')));
+echo $this->renderPartial('_form', 
+		array('model'=>$model,'isofiles'=>$isofiles,'profiles' =>$profiles,'defaults'=>$defaults,
+				'operatingsystems' =>$operatingsystems, 'ostypes'=>$ostypes, 'osversions'=>$osversions
+				,'submittext'=>Yii::t('vmprofile','Create')));

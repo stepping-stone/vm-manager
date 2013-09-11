@@ -27,6 +27,27 @@
  *
  *
  */
+
+Yii::app()->clientScript->registerScript('ostype', <<<EOS
+	var osversions = null;
+	$('#VmProfileForm_ostype').change(function(event) {
+		var val = $(this).val();
+		$('#VmProfileForm_osversion').empty();
+		$('#VmProfileForm_osversion').append($('<option></option>'));
+		if ('' != val) {
+			$.each(osversions[val], function(key, value) {
+				option = $('<option></option>');
+				option.attr('value', key).text(value);
+				$('#VmProfileForm_osversion').append(option);
+			});
+			$('#VmProfileForm_osversion').prop('disabled', false);
+		}
+		else {
+			$('#VmProfileForm_osversion').prop('disabled', false);
+		}
+	});
+EOS
+, CClientScript::POS_READY);
 ?>
 <div class="form">
 <?php $form=$this->beginWidget('CActiveForm', array(
@@ -128,8 +149,24 @@ if (!is_null($profiles)) {
 					option.attr('value', key).text(value);
 					$('#VmProfileForm_ostype').append(option);
 				});
+				$('#VmProfileForm_osversion').empty();
 				osversions = data['osversions'];
-						
+				if (null != data['ostype']) {
+					//$('#VmProfileForm_os').prop('disabled', true);
+					$('#VmProfileForm_ostype').prop('disabled', true).val(data['ostype']);
+					$('#VmProfileForm_osversion').append($('<option></option>'));
+					$.each(osversions[data['ostype']], function(key, value) {
+						option = $('<option></option>');
+						option.attr('value', key).text(value);
+						$('#VmProfileForm_osversion').append(option);
+					});
+					$('#VmProfileForm_osversion').prop('disabled', true).val(data['osversion']);
+				}
+				else {
+					//$('#VmProfileForm_os').prop('disabled', true);
+					$('#VmProfileForm_ostype').prop('disabled', false);
+					$('#VmProfileForm_osversion').prop('disabled', true);
+				}						
 				$('#submit').removeAttr('disabled');
 			},
 		});
@@ -141,19 +178,6 @@ EOS
 	$('#hidestep2').width($('#step2').width());
 	$('#hidestep2').offset($('#step2').offset());
 
-	var osversions = null;
-	$('#VmProfileForm_ostype').change(function(event) {
-		var val = $(this).val();
-		$('#VmProfileForm_osversion').empty();
-		$('#VmProfileForm_osversion').append($('<option></option>'));
-		if ('' != val) {
-			$.each(osversions[val], function(key, value) {
-				option = $('<option></option>');
-				option.attr('value', key).text(value);
-				$('#VmProfileForm_osversion').append(option);
-			});
-		}
-	});
 EOS
 , CClientScript::POS_READY);
 
@@ -205,11 +229,11 @@ else {
 		<br/>
 		<div class="row">
 <?php
-if (!is_null($operatingsystems)) {
+if (!is_null($operatingsystems) || is_null($model->ostype) || is_null($model->osversion)) {
 ?>		
 			<div class="column span-4">
 				<?php echo $form->labelEx($model,'os'); ?>
-				<?php echo $form->hiddenField($model, 'os', ''); ?>
+				<?php echo $form->hiddenField($model, 'os'); ?>
 				<?php echo CHtml::textField('os', '', array('size'=>20, 'disabled' => 'disabled')); ?>
 				<?php echo '<span style="font-size: 70%;">(readonly)</span>'; ?>
 			</div>
@@ -223,7 +247,21 @@ if (!is_null($operatingsystems)) {
 				<?php echo $form->dropDownList($model,'osversion', array(), array('prompt'=>'')); ?>
 				<?php echo $form->error($model,'osversion'); ?>
 			</div>
-<?php 
+<?php
+$ostypes = CJSON::encode($ostypes);
+$osversions = CJSON::encode($osversions);
+Yii::app()->clientScript->registerScript('os', <<<EOS
+$("#os").val('{$model->os}');
+ostypes = $.parseJSON('{$ostypes}');
+osversions = $.parseJSON('{$osversions}');
+$.each(ostypes, function(key, value) {
+	option = $('<option></option>');
+	option.attr('value', key).text(value);
+	$('#VmProfileForm_ostype').append(option);
+});
+EOS
+, CClientScript::POS_READY);
+
 }
 else {
 	echo $form->labelEx($model,'os');
