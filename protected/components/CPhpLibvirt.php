@@ -351,17 +351,34 @@ class CPhpLibvirt {
 		}
 				
 		foreach($data['devices']['disks'] as $disk) {
-			$devices .= '		<disk type="' . $disk['sstType'] . '" device="' . $disk['sstDevice'] . '">' . "\n";
-			if (isset($disk['sstDriverName']) && isset($disk['sstDriverType'])) {
-				$devices .= '			<driver name="' . $disk['sstDriverName'] . '" type="' . $disk['sstDriverType'] .
+			if ('file' === $disk['sstType']) {
+				$devices .= '		<disk type="' . $disk['sstType'] . '" device="' . $disk['sstDevice'] . '">' . "\n";
+				if (isset($disk['sstDriverName']) && isset($disk['sstDriverType'])) {
+					$devices .= '			<driver name="' . $disk['sstDriverName'] . '" type="' . $disk['sstDriverType'] .
+						(isset($disk['sstDriverCache']) && '' != $disk['sstDriverCache'] ? '" cache="' . $disk['sstDriverCache'] : '') . '"/>' . "\n";
+				}
+				$devices .= '			<source file="' . $disk['sstSourceFile'] . '"/>' . "\n";
+				$devices .= '			<target dev="' . $disk['sstDisk'] . '" bus="' . $disk['sstTargetBus'] . '"/>' . "\n";
+				if (isset($disk['sstReadonly']) && 'TRUE' == $disk['sstReadonly']) {
+					$devices .= '			<readOnly/>' . "\n";
+				}
+				$devices .= '		</disk>' . "\n";
+			}
+			else if ('network' === $disk['sstType']) {
+				$devices .= '		<disk type="' . $disk['sstType'] . '" device="' . $disk['sstDevice'] . '">' . "\n";
+				if (isset($disk['sstDriverName']) && isset($disk['sstDriverType'])) {
+					$devices .= '			<driver name="' . $disk['sstDriverName'] . '" type="' . $disk['sstDriverType'] .
 					(isset($disk['sstDriverCache']) && '' != $disk['sstDriverCache'] ? '" cache="' . $disk['sstDriverCache'] : '') . '"/>' . "\n";
+				}
+				$devices .= '			<source protocol="' . $disk['sstSourceProtocol'] . '" name="' . $disk['sstSourceName'] . '">' . "\n";
+				$devices .= '				<host name="' .  $disk['sstSourceHostName'] . '"/>' . "\n";
+				$devices .= '			</source>' . "\n";
+				$devices .= '			<target dev="' . $disk['sstDisk'] . '" bus="' . $disk['sstTargetBus'] . '"/>' . "\n";
+				if (isset($disk['sstReadonly']) && 'TRUE' == $disk['sstReadonly']) {
+					$devices .= '			<readOnly/>' . "\n";
+				}
+				$devices .= '		</disk>' . "\n";
 			}
-			$devices .= '			<source file="' . $disk['sstSourceFile'] . '"/>' . "\n";
-			$devices .= '			<target dev="' . $disk['sstDisk'] . '" bus="' . $disk['sstTargetBus'] . '"/>' . "\n";
-			if (isset($disk['sstReadonly']) && 'TRUE' == $disk['sstReadonly']) {
-				$devices .= '			<readOnly/>' . "\n";
-			}
-			$devices .= '		</disk>' . "\n";
 		}
 		foreach($data['devices']['interfaces'] as $interface) {
 			$devices .= '		<interface type="' . $interface['sstType'] . '">' . "\n";
@@ -837,12 +854,12 @@ class CPhpLibvirt {
 		$con = $this->getConnection($host);
 		if (!is_null($con)) {
 			Yii::log('checkBlockJob: connection ok', 'profile', 'phplibvirt');
-			Yii::log('checkBlockJob: libvirt_domain_lookup_by_uuid_string(' . $data['libvirt'] . ', ' . $uuid . ')', 'profile', 'phplibvirt');
+			Yii::log('checkBlockJob: libvirt_domain_lookup_by_uuid_string(' . $host . ', ' . $uuid . ')', 'profile', 'phplibvirt');
 			$domain  = &libvirt_domain_lookup_by_uuid_string($con, $uuid);
 			if (false !== $domain) {
 				Yii::log('checkBlockJob: libvirt_domain_get_block_job_info(' . $uuid . ', ' . $disk . ')', 'profile', 'phplibvirt');
 				$retval = libvirt_domain_get_block_job_info($domain, $disk);
-				Yii::log('checkBlockJob: info ' . print_r($retval, true), 'profile', 'phplibvirt');
+				Yii::log('checkBlockJob: info ' . var_export($retval, true), 'profile', 'phplibvirt');
 			}
 		}
 		return $retval;
