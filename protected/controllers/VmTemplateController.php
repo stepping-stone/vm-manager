@@ -287,7 +287,14 @@ class VmTemplateController extends Controller
 						$names = CPhpLibvirt::getInstance()->createVolumeFile($templatesdir, $storagepool->sstStoragePool, $node->getLibvirtUri(), $disk->sstVolumeCapacity);
 						if (false !== $names) {
 							$disk->sstVolumeName = $names['VolumeName'];
-							$disk->sstSourceFile = $names['SourceFile'];
+							$sstSourceFile = $names['SourceFile'];
+							
+							$disk->sstSourceName = str_replace(Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][0], 
+									Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][1], $sstSourceFile);
+							$disk->sstType = 'network';
+							$disk->sstSourceProtocol = 'gluster';
+							$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
+							$disk->sstSourceFile = '';
 						}
 						else {
 							$hasError = true;
@@ -671,7 +678,14 @@ class VmTemplateController extends Controller
 					$names = CPhpLibvirt::getInstance()->createBackingStoreVolumeFile($templatesdir, $storagepool->sstStoragePool, $diskpath, $usedNode->getLibvirtUri(), $disk->sstVolumeCapacity);
 					if (false !== $names) {
 						$disk->sstVolumeName = $names['VolumeName'];
-						$disk->sstSourceFile = $names['SourceFile'];
+						$sstSourceFile = $names['SourceFile'];
+							
+						$disk->sstSourceName = str_replace(Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][0],
+								Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][1], $sstSourceFile);
+						$disk->sstType = 'network';
+						$disk->sstSourceProtocol = 'gluster';
+						$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
+						$disk->sstSourceFile = '';
 						
 						// Don't set $result->setOverwrite(true); because sstThinProvisioningVirtualMachine is a multiple attribute
 						$result->sstThinProvisioningVirtualMachine = $vm->sstVirtualMachine;

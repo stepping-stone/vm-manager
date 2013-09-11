@@ -150,6 +150,10 @@ class LdapVm extends CLdapRecord {
 			$params['devices']['disks'][$disk->sstDisk]['sstDriverType'] = $disk->sstDriverType;
 			$params['devices']['disks'][$disk->sstDisk]['sstReadonly'] = $disk->sstReadonly;
 			$params['devices']['disks'][$disk->sstDisk]['sstDriverCache'] = $disk->sstDriverCache;
+			
+			$params['devices']['disks'][$disk->sstDisk]['sstSourceProtocol'] = $disk->sstSourceProtocol;
+			$params['devices']['disks'][$disk->sstDisk]['sstSourceName'] = $disk->sstSourceName;
+			$params['devices']['disks'][$disk->sstDisk]['sstSourceHostName'] = $disk->sstSourceHostName; //  = Yii::app()->params['virtualization']['glusterFSHost'];
 		}
 		$params['devices']['interfaces'] = array();
 		foreach($this->devices->interfaces as $interface) {

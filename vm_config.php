@@ -73,6 +73,15 @@ return array(
 	'params'=>array(
 		'virtualization' => array(
 			'version' => '1.2.18.3',
+
+			'disk' => array(
+				'sstSourceName' => array(
+					'vm-persistent' => array('/var/virtualization', 'P_virtualization'), // [0] = search string, [1] = replace string
+					'vm-templates' => array('/var/virtualization', 't_virtualization'),
+					'vm-dynamic' => array('/var/virtualization', 'd_virtualization'),
+				),
+				'sstSourceHostName' => '10.1.120.11',
+			),
 			// Don't change the following params if you don't know what you are doing
 			'spiceByName' => false,
 			'disableSpiceAcceleration' => false,

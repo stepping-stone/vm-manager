@@ -209,6 +209,12 @@ class VmProfileController extends Controller
 					$disk->attributes = $rdisk->attributes;
 					if (-1 == $disk->sstVolumeCapacity && 'disk' == $disk->sstDevice) {
 						$disk->sstVolumeCapacity = $model->sstVolumeCapacity;
+						
+						$disk->sstSourceName = 'TBD_SYSTEM';
+						$disk->sstType = 'network';
+						$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
+						$disk->sstSourceProtocol = 'gluster';
+						$disk->sstSourceFile = '';
 					}
 					if ('TBD_GUI' == $disk->sstSourceFile && 'cdrom' == $disk->sstDevice) {
 						$disk->sstSourceFile = $isosourcefile;
@@ -289,6 +295,12 @@ class VmProfileController extends Controller
 					$disk->attributes = $rdisk->attributes;
 					if ('disk' == $disk->sstDevice) {
 						$disk->sstVolumeCapacity = $model->sstVolumeCapacity;
+						
+						$disk->sstSourceName = 'TBD_SYSTEM';
+						$disk->sstType = 'network';
+						$disk->sstSourceProtocol = 'gluster';
+						$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
+						$disk->sstSourceFile = '';
 					}
 					if ('cdrom' == $disk->sstDevice) {
 						$copydata = CPhpLibvirt::getInstance()->copyIsoFile($disk->sstSourceFile, $isosourcefile);
