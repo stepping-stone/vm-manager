@@ -1646,6 +1646,7 @@ EOS;
 								}
 								else {
 									$vm->setOverwrite(true);
+									$prov = array_values($prov);
 									$vm->sstThinProvisioningVirtualMachine = $prov;
 									$vm->update();
 
