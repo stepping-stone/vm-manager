@@ -623,8 +623,8 @@ class VmTemplateController extends Controller
 			$vm->setOverwrite(true);
 			$vm->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 				
-			if (isset($finishForm['name']) && '' != $finishForm['name']) {
-				$vm->sstDisplayName = $finishForm['name'];
+			if (isset($finishForm['displayname']) && '' != $finishForm['displayname']) {
+				$vm->sstDisplayName = $finishForm['displayname'];
 			}
 			if (isset($finishForm['hostname']) && '' != $finishForm['hostname']) {
 				$vm->sstNetworkHostname = $finishForm['hostname'];
