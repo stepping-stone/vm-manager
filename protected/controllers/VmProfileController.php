@@ -415,7 +415,7 @@ class VmProfileController extends Controller
 
 			$model->dn = $vm->dn;
 			$model->name = $profile->ou;
-			$model->description = $profile->description;
+			$model->description = $vm->description;
 			$model->sstClockOffset = $vm->sstClockOffset;
 			$model->sstMemory = $vm->sstMemory;
 			$model->sstVCPU = $vm->sstVCPU;
