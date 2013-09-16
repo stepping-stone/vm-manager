@@ -76,9 +76,9 @@ return array(
 
 			'disk' => array(
 				'sstSourceName' => array(
-					'vm-persistent' => array('/var/virtualization', 'P_virtualization'), // [0] = search string, [1] = replace string
-					'vm-templates' => array('/var/virtualization', 't_virtualization'),
-					'vm-dynamic' => array('/var/virtualization', 'd_virtualization'),
+					'vm-persistent' => array('/var/virtualization', 'virtualization'), // [0] = search string, [1] = replace string
+					'vm-templates' => array('/var/virtualization', 'virtualization'),
+					'vm-dynamic' => array('/var/virtualization', 'virtualization'),
 				),
 				'sstSourceHostName' => '10.1.120.11',
 			),

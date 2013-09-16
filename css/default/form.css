@@ -152,7 +152,7 @@ div.form .errorSummary
 	font-size: 0.9em;
 }
 
-div.form .errorMessage
+div.form .errorMessage, div.form .errorMessage a
 {
 	color: #CC0000;
 	font-size: 0.9em;

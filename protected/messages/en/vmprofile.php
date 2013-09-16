@@ -55,4 +55,7 @@ return array (
   'Unload message' => 'Note: If you leave this page the upload is stopped!\\nDo you want to stop the upload?',
   'Alternative upload method' => '',
   'Alternative upload method link' => 'http://www.foss-cloud.org/en/index.php/Upload_ISO-Files',
+  'os' => 'OS',
+  'ostype' => 'OS Type',
+  'osversion' => 'OS Version'
 );

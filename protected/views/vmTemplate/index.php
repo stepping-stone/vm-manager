@@ -1093,10 +1093,10 @@ EOS
 			<label for="finishEnv" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationEnvironment'); ?> </label>
 			<?php echo CHtml::dropDownList('FinishForm[env]', '', array(), array('prompt' => '', 'id' => 'finishEnv')); ?>
 		</div>
-		<div id="errorSelectStatic" class="ui-state-error ui-corner-all" style="display: block; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+		<div id="errorSelectStatic" class="ui-state-error ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorSelectStaticMsg" style="display: block;"></span></p>
 		</div>
-		<div id="infoSelectStatic" class="ui-state-highlight ui-corner-all" style="display: block; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+		<div id="infoSelectStatic" class="ui-state-highlight ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoSelectStaticMsg"></span></p>
 		</div>
 </form>
