@@ -326,6 +326,10 @@ class CPhpLibvirt {
    		<redirfilter>
 			<usbdev allow=\"{$data[\'devices\'][\'usb\']}\"/>
 		</redirfilter>
+        <rng model=\"virtio\">
+            <rate period=\"1000\" bytes=\"1024\"/>
+            <backend model=\"random\">/dev/random</backend>
+        </rng>
 		{$devices}
 	</devices>
 </domain>
