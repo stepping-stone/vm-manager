@@ -121,10 +121,10 @@ class CPhpLibvirt {
 			if (false !== $domain) {
 				Yii::log('startVmWithBlockJob: libvirt_domain_create(' . $data['libvirt'] . ', ' . self::$VIR_DOMAIN_START_PAUSED . ')', 'profile', 'phplibvirt');
 				$retval = libvirt_domain_create($domain, self::$VIR_DOMAIN_START_PAUSED);
-				echo '<pre>libvirt_domain_create ' . var_export($retval, true) . '</pre>';
+				//echo '<pre>libvirt_domain_create ' . var_export($retval, true) . '</pre>';
 				if ($retval) {
 					foreach($data['devices']['disks'] as $disk) {
-						echo $disk['sstDevice'] . ': ' . $disk['sstDisk'] . '<br/>';
+						//echo $disk['sstDevice'] . ': ' . $disk['sstDisk'] . '<br/>';
 						if ('disk' == $disk['sstDevice']) {
 							Yii::log('startVmWithBlockJob: libvirt_domain_block_pull(' . $data['libvirt'] . ', ' . $disk['sstDisk'] . ', 10)', 'profile', 'phplibvirt');
 							if (0 != libvirt_domain_block_pull($domain, $disk['sstDisk'], 10)) {

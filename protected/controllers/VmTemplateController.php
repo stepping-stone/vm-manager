@@ -289,12 +289,23 @@ class VmTemplateController extends Controller
 							$disk->sstVolumeName = $names['VolumeName'];
 							$sstSourceFile = $names['SourceFile'];
 							
-							$disk->sstSourceName = str_replace(Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][0], 
-									Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][1], $sstSourceFile);
-							$disk->sstType = 'network';
-							$disk->sstSourceProtocol = 'gluster';
-							$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
-							$disk->sstSourceFile = '';
+							if ('network' === $rdisk->sstType) {
+								$disk->sstSourceName = str_replace(Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][0], 
+										Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][1], $sstSourceFile);
+								$disk->sstType = 'network';
+								$disk->sstSourceProtocol = 'gluster';
+								$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
+								$disk->sstSourceFile = '';
+							}
+							else if ('file' === $rdisk->sstType) {
+								$disk->sstSourceFile = $sstSourceFile;
+							}
+							else {
+								$hasError = true;
+								$model->addError('dn', Yii::t('vmtemplate', 'sstType={type} not implemented!', array('{type}' => $rdisk->sstType)));
+								$templatevm->delete();
+								break;
+							}
 						}
 						else {
 							$hasError = true;
@@ -674,22 +685,30 @@ class VmTemplateController extends Controller
 				if ('disk' == $disk->sstDevice) {
 					$templatesdir = substr($storagepool->sstStoragePoolURI, 7);
 					//$goldenimagepath = $vm->devices->getDiskByName('vda')->sstSourceFile;
-					$diskpath = $result->devices->getDiskByName('vda')->sstSourceFile; //sstVolumeName . '.qcow2';
+					// $diskpath = $result->devices->getDiskByName('vda')->sstSourceFile; //sstVolumeName . '.qcow2';
+					$diskpath = $disk->sstSourceFile; //sstVolumeName . '.qcow2';
 					$names = CPhpLibvirt::getInstance()->createBackingStoreVolumeFile($templatesdir, $storagepool->sstStoragePool, $diskpath, $usedNode->getLibvirtUri(), $disk->sstVolumeCapacity);
 					if (false !== $names) {
 						$disk->sstVolumeName = $names['VolumeName'];
 						$sstSourceFile = $names['SourceFile'];
 							
-						$disk->sstSourceName = str_replace(Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][0],
-								Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][1], $sstSourceFile);
-						$disk->sstType = 'network';
-						$disk->sstSourceProtocol = 'gluster';
-						$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
-						$disk->sstSourceFile = '';
-						
-						// Don't set $result->setOverwrite(true); because sstThinProvisioningVirtualMachine is a multiple attribute
-						$result->sstThinProvisioningVirtualMachine = $vm->sstVirtualMachine;
-						$result->update();
+						if ('network' === $rdisk->sstType) {
+							$disk->sstSourceName = str_replace(Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][0],
+									Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][1], $sstSourceFile);
+							$disk->sstType = 'network';
+							$disk->sstSourceProtocol = 'gluster';
+							$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
+							$disk->sstSourceFile = '';
+						}
+						else if ('file' === $rdisk->sstType) {
+							$disk->sstSourceFile = $sstSourceFile;
+						}
+						else {
+							$hasError = true;
+							$vm->delete(true);
+							$this->sendAjaxAnswer(array('error' => 1, 'message' => 'sstType=' . $rdisk->sstType . ' not implemented!'));
+							break;
+						}
 					}
 					else {
 						$hasError = true;
@@ -698,11 +717,21 @@ class VmTemplateController extends Controller
 						break;
 					}
 				}
+				else if ('network' === $disk->sstType) {
+					$hasError = true;
+					$vm->delete(true);
+					$this->sendAjaxAnswer(array('error' => 1, 'message' => 'sstType=network not implemented!'));
+					break;
+				}
 				
 				$disk->setBranchDn($devices->dn);
 				$disk->save();
 			}
 			if (!$hasError) {
+				// Don't set $result->setOverwrite(true); because sstThinProvisioningVirtualMachine is a multiple attribute
+				$result->sstThinProvisioningVirtualMachine = $vm->sstVirtualMachine;
+				$result->update();
+				
 				$firstMac = null;
 				foreach($rdevices->interfaces as $rinterface) {
 					$interface = new LdapVmDeviceInterface();
