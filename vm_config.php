@@ -72,7 +72,7 @@ return array(
 	// using Yii::app()->params['paramName']
 	'params'=>array(
 		'virtualization' => array(
-			'version' => '1.2.18.4',
+			'version' => '1.2.18.5',
 
 			'disk' => array(
 				'sstSourceName' => array(
