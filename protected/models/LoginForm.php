@@ -71,7 +71,7 @@ class LoginForm extends CFormModel
 	{
 		return array(
 			'realm'=>Yii::t('site', 'Realm'),
-			'username'=>Yii::t('site', 'Username'),
+			'username'=>Yii::t('site', 'Email'),
 			'password'=>Yii::t('site', 'Password'),
 			'rememberMe'=>Yii::t('site', 'Remember me next time'),
 		);
