@@ -51,7 +51,8 @@ class LdapVmFromTemplate extends LdapVm {
 	{
 		return array(
 			'node' => array(self::HAS_ONE, 'sstNode', 'LdapNode', 'sstNode'),
-			'network' => array(self::HAS_ONE_DEPTH, 'sstVirtualMachine', 'LdapNetwork', 'cn'),
+			// network works only because array('cn' ... overwrites filter 'cn' == 'sstVirtualMachine'
+			'network' => array(self::HAS_MANY_DEPTH, 'sstVirtualMachine', 'LdapNetwork', 'cn', array('cn' => '"" . $model->sstVirtualMachine . "*"')),
 			'devices' => array(self::HAS_ONE, 'dn', 'LdapVmDevice', '$model->getDn()', array('ou' => 'devices')),
 			'profilevm' => array(self::HAS_ONE_DN, 'dn', 'LdapVmFromProfile', '$model->labeledURI', array()),
 			'defaults' => array(self::HAS_ONE_DN, 'dn', 'LdapVmDefaults', '$model->labeledURI', array()),

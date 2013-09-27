@@ -56,7 +56,8 @@ class LdapVm extends CLdapRecord {
 		return array(
 		// __construct($name,$attribute,$className,$foreignAttribute,$options=array())
 			'node' => array(self::HAS_ONE, 'sstNode', 'LdapNode', 'sstNode'),
-			'network' => array(self::HAS_ONE_DEPTH, 'sstVirtualMachine', 'LdapNetwork', 'cn'),
+			//'network' => array(self::HAS_MANY_DEPTH, 'sstVirtualMachine', 'LdapNetwork', 'cn'),
+			'network' => array(self::HAS_MANY_DEPTH, 'sstVirtualMachine', 'LdapNetwork', 'cn', array('cn' => '"" . $model->sstVirtualMachine . "*"')),
 			'devices' => array(self::HAS_ONE, 'dn', 'LdapVmDevice', '$model->getDn()', array('ou' => 'devices')),
 			'defaults' => array(self::HAS_ONE_DN, 'dn', 'LdapVmDefaults', '$model->labeledURI', array()),
 			'dhcp' => array(self::HAS_ONE_DEPTH, 'sstVirtualMachine', 'LdapDhcpVm', 'cn', array('objectclass' => 'dhcpHost')),
@@ -88,7 +89,12 @@ class LdapVm extends CLdapRecord {
 
 	public function getIp()
 	{
-		return $this->network->dhcpstatements['fixed-address'];
+		foreach($this->network as $network) {
+			if (false === strpos($network->cn)) {
+				return $network->dhcpstatements['fixed-address'];
+			}
+		}
+		return '???';
 	}
 
 	public function isActive()

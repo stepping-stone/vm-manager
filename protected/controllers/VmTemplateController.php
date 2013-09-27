@@ -525,10 +525,15 @@ class VmTemplateController extends Controller
 					else {
 						// delete IP
 						//echo '<pre>delete IP ' . print_r($vm->dhcp, true) . '</pre>';
-						if (!is_null($vm->dhcp)) {
-							$vm->dhcp->delete();
+// 						if (!is_null($vm->dhcp)) {
+// 							$vm->dhcp->delete();
+// 						}
+						if (!is_null($vm->network)) {
+							foreach($vm->network as $network) {
+								$network->delete();
+							}
 						}
-
+						
 						// delete User assign
 /*
 						$criteria = array(
@@ -1119,11 +1124,28 @@ class VmTemplateController extends Controller
 		$vm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($dn);
 		$rowid  = $_GET['rowid'];
 
-		$ip = '???';
-		$network = $vm->network;
-		if (!is_null($network)) {
+		$ipText = '';
+		$networks = $vm->network;
+		if (!is_null($networks)) {
+			$ips = array();
 			//echo '<pre>Network: ' . print_r($network, true) . '</pre>';
-			$ip = $network->dhcpstatements['fixed-address'];
+			foreach($networks as $network) {
+				$idx = 0;
+				if (false !== strpos($network->cn, '_')) {
+					$idx = substr($network->cn, strpos($network->cn, '_') + 1);
+				}
+				$ips[$idx] = $network->dhcpstatements['fixed-address'];
+			}
+			ksort($ips);
+			foreach($ips as $idx => $ip) {
+				if ('' !== $ipText) {
+					$ipText .= '<br/>';
+				}
+				$ipText .= ('0' == $idx && 1 === count($ips) ? '' : $idx . ': ') . $ip;
+			}
+		}
+		if ('' === $ipText) {
+			$ipText = '???';
 		}
 		$memory = $this->getHumanSize($vm->sstMemory);
 		$loading = $this->getImageBase() . '/loading.gif';
@@ -1191,8 +1213,8 @@ EOS;
 		if ('Golden-Image' !== $vm->sstVirtualMachineSubType) {
 			echo <<< EOS
     <tr>
-      <td style="text-align: right"><b>IP Adress:</b></td>
-      <td>$ip</td>
+      <td style="text-align: right; vertical-align: top;"><b>IP Adress:</b></td>
+      <td>$ipText</td>
     </tr>
 EOS;
 		}
