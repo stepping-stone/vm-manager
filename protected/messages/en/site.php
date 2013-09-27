@@ -23,4 +23,5 @@ return array (
   'Remember me next time' => '',
   'User not assigned to realm.' => '',
   'Username' => '',
+  'Email' => '',
 );

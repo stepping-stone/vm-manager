@@ -23,4 +23,5 @@ return array (
   'Remember me next time' => 'für das nächste Mal merken',
   'User not assigned to realm.' => 'Benutzer nicht erlaubt in diesem Bereich.',
   'Username' => 'Benutzername',
+  'Email' => 'Email',
 );
