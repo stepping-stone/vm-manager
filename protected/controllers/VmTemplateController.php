@@ -598,7 +598,7 @@ class VmTemplateController extends Controller
 			$result = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_POST['dn']);
 
 			$os = null;
-			if (isset($result->operatingsystem)) {
+			if (!is_null($result->operatingsystem)) {
 				$os = LdapVmOperatingSystem::model();
 				$os->ou = 'operating system';
 				$os->sstOperatingSystem = $result->operatingsystem->sstOperatingSystem;
