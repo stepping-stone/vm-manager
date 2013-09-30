@@ -411,7 +411,7 @@ class VmTemplateController extends Controller
 
 			$rdevices = $result->devices;
 			foreach($rdevices->disks as $rdisk) {
-				if ('disk' == $rdisk->sstDevice) {
+				if ('disk' === $rdisk->sstDevice && 'vda' === $rdisk->sstDisk) {
 					$rdisk->setOverwrite(true);
 					$rdisk->sstVolumeCapacity = $model->sstVolumeCapacity;
 					$rdisk->save();
