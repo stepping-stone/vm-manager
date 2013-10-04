@@ -200,7 +200,7 @@ class CPhpLibvirt {
 		Yii::log('migrateVm: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
 		$domain = libvirt_domain_lookup_by_name($con, $data['name']);
 		Yii::log('migrateVm: libvirt_domain_get_xml_desc(' . $data['libvirt'] . ',NULL)', 'profile', 'phplibvirt');
-		$xmllibvirt = libvirt_domain_get_xml_desc($domain, NULL, self::$VIR_DOMAIN_XML_SECURE);
+		$xmllibvirt = libvirt_domain_get_xml_desc($domain, NULL, self::$VIR_DOMAIN_XML_MIGRATABLE);
 		Yii::log('migrateVm: orig XML: ' . $xmllibvirt, 'profile', 'phplibvirt');
 		$xml = $this->replaceXML($xmllibvirt, $data);
 		Yii::log('migrateVm:  new XML: ' . $xml, 'profile', 'phplibvirt');
