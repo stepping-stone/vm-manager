@@ -689,9 +689,11 @@ class VmTemplateController extends Controller
 				$disk->attributes = $rdisk->attributes;
 				if ('disk' == $disk->sstDevice) {
 					$templatesdir = substr($storagepool->sstStoragePoolURI, 7);
-					//$goldenimagepath = $vm->devices->getDiskByName('vda')->sstSourceFile;
-					// $diskpath = $result->devices->getDiskByName('vda')->sstSourceFile; //sstVolumeName . '.qcow2';
-					$diskpath = $disk->sstSourceFile; //sstVolumeName . '.qcow2';
+					$diskpath = $disk->sstSourceFile;
+					if ('network' === $rdisk->sstType) {
+						$diskpath = str_replace(Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][1],
+									Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][0], $rdisk->sstSourceName);
+					}
 					$names = CPhpLibvirt::getInstance()->createBackingStoreVolumeFile($templatesdir, $storagepool->sstStoragePool, $diskpath, $usedNode->getLibvirtUri(), $disk->sstVolumeCapacity);
 					if (false !== $names) {
 						$disk->sstVolumeName = $names['VolumeName'];
