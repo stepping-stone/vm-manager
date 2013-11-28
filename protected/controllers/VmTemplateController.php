@@ -294,7 +294,7 @@ class VmTemplateController extends Controller
 										Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][1], $sstSourceFile);
 								$disk->sstType = 'network';
 								$disk->sstSourceProtocol = 'gluster';
-								$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName']['vm-template'];
+								$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName']['vm-templates'];
 								$disk->sstSourceFile = '';
 							}
 							else if ('file' === $rdisk->sstType) {
