@@ -212,7 +212,7 @@ class VmProfileController extends Controller
 						
 						$disk->sstSourceName = 'TBD_SYSTEM';
 						$disk->sstType = 'network';
-						$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
+						$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName']['vm-template'];
 						$disk->sstSourceProtocol = 'gluster';
 						$disk->sstSourceFile = '';
 					}
@@ -299,7 +299,7 @@ class VmProfileController extends Controller
 						$disk->sstSourceName = 'TBD_SYSTEM';
 						$disk->sstType = 'network';
 						$disk->sstSourceProtocol = 'gluster';
-						$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName'];
+						$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName']['vm-template'];
 						$disk->sstSourceFile = '';
 					}
 					if ('cdrom' == $disk->sstDevice) {

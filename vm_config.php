@@ -80,7 +80,11 @@ return array(
 					'vm-templates' => array('/var/virtualization', 'virtualization'),
 					'vm-dynamic' => array('/var/virtualization', 'virtualization'),
 				),
-				'sstSourceHostName' => '10.1.120.11',
+				'sstSourceHostName' => array(
+					'vm-persistent' => '10.1.120.11',
+					'vm-templates' => '10.1.120.11',
+					'vm-dynamic' => '10.1.120.11',
+				),
 			),
 			// Don't change the following params if you don't know what you are doing
 			'spiceByName' => false,
