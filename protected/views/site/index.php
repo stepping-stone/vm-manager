@@ -38,7 +38,7 @@ $this->title='Welcome to the FOSS-Cloud';
 <p>The FOSS-Cloud solution is the most advanced Open Source Cloud in the marketplace today. </p>
 <p>Before using, the FOSS-Cloud team would like to remind you that the primary means of sustaining the development of FOSS-Cloud is via contributions by users such as yourself. FOSS-Cloud is now and will continue to be totally free of charge; however, it takes money and resources to make FOSS-Cloud available. If you are able, please consider donating to the FOSS-Cloud Project.</p>
 <div  style="float: left;">
-<p><a href="http://sourceforge.net/donate/index.php?group_id=390416"><img src="http://images.sourceforge.net/images/project-support.jpg" width="88" height="32" border="0" alt="Support This Project" /> </a></p>
+<p><a href="http://sourceforge.net/donate/index.php?group_id=390416"><img src="<?php echo Yii::app()->baseUrl;?>/images/project-support.jpg" width="88" height="32" border="0" alt="Support This Project" /> </a></p>
 <p>Thank you for using FOSS-Cloud</p>
 <p>The FOSS-Cloud Team</p>
 </div>
