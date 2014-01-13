@@ -261,8 +261,9 @@ EOS
 			<?php echo $form->hiddenField($model, 'os', ''); ?>
 			<?php echo $form->hiddenField($model, 'ostype', ''); ?>
 			<?php echo $form->hiddenField($model, 'osversion', ''); ?>
-			<?php echo CHtml::textField('os', '', array('size'=>20, 'disabled' => 'disabled')); ?>
+			<?php echo CHtml::textField('os', (is_null($profiles) ? implode(' ', array($model->os, $model->ostype, $model->osversion)) : ''), array('size'=>20, 'disabled' => 'disabled')); ?>
 			<?php echo '<span style="font-size: 70%;">(readonly)</span>'; ?>
+			<?php echo $form->error($model,'os'); ?>
 		</div>
 		<br/>
 		<div class="row">
