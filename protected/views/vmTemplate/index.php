@@ -626,8 +626,8 @@ Yii::app()->clientScript->registerScript('finish', <<<EOS
 //function finish(id, pooldn, name, subtype, domainname, hostname)
 function finish(id, formdata)
 {
-	$('#selectStaticButton').attr('disabled', 'disabled');
-	$('#selectStaticButton').addClass('ui-state-disabled');
+	$('#selectStaticOkButton').attr('disabled', 'disabled');
+	$('#selectStaticOkButton').addClass('ui-state-disabled');
 
 	var row = $('#{$gridid}_grid').getRowData(id);
 	buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false};
@@ -648,9 +648,9 @@ function finish(id, formdata)
 				$('#infoSelectStatic').css('display', 'none');
 				$('#errorSelectStatic').css('display', 'block');
 				$('#errorSelectStaticMsg').html(data.message);
-				if (2 == err) {
-					$('#selectStaticButton').removeAttr('disabled');
-					$('#selectStaticButton').removeClass('ui-state-disabled');
+				if (2 == data.error) {
+					$('#selectStaticOkButton').removeAttr('disabled');
+					$('#selectStaticOkButton').removeClass('ui-state-disabled');
 				}
 			}
 			else {
@@ -1061,17 +1061,17 @@ EOS
 ?>
 		<?php echo CHtml::hiddenField('FinishForm[id]','', array('id' => 'finishId')); ?>
 		<div>
-			<label for="finishPool" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationPool'); ?> </label>
+			<label for="finishPool" style="width: 150px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationPool'); ?> </label>
 			<?php echo CHtml::dropDownList('FinishForm[pool]', '', $parray, array('prompt' => '', 'id' => 'finishPool')); ?>
 		</div>
 		<br/>
 		<div>
-			<label for="finishNode" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationNode'); ?> </label>
+			<label for="finishNode" style="width: 150px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationNode'); ?> </label>
 			<?php echo CHtml::dropDownList('FinishForm[node]', '', array(), array('prompt' => '', 'id' => 'finishNode')); ?>
 		</div>
 		<br/>
 		<div>
-			<label for="displayname" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationName'); ?> </label>
+			<label for="displayname" style="width: 150px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationName'); ?> </label>
 			<input type="text" id="displayname" name="displayname" disabled="disabled" value="<?php echo $name; ?>"/>
 			<input type="hidden" id="finishDisplayname" name="FinishForm[displayname]" value="<?php echo $name; ?>"/>
 			<input type="hidden" id="finishHostname" name="FinishForm[hostname]" value="<?php echo $hostname; ?>" />
@@ -1079,24 +1079,24 @@ EOS
 		</div>
 		<br/>
 		<div id="radiosubtype" style="">
-			<label style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationType'); ?> </label>
+			<label style="width: 180px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationType'); ?> </label>
 			<input type="radio" id="radiosubtype1" name="FinishForm[subtype]" value="Server" checked="checked" /><label for="radiosubtype1">Server</label>
 			<input type="radio" id="radiosubtype2" name="FinishForm[subtype]" value="Desktop" /><label for="radiosubtype2">Desktop</label>
 		</div>
 		<br/>
 		<div>
-			<label for="finishStack" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationSoftwareStack'); ?> </label>
+			<label for="finishStack" style="width: 150px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationSoftwareStack'); ?> </label>
 			<?php echo CHtml::dropDownList('FinishForm[stack]', '', array(), array('prompt' => '', 'id' => 'finishStack')); ?>
 		</div>
 		<br/>
 		<div>
-			<label for="finishEnv" style="width: 130px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationEnvironment'); ?> </label>
+			<label for="finishEnv" style="width: 150px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationEnvironment'); ?> </label>
 			<?php echo CHtml::dropDownList('FinishForm[env]', '', array(), array('prompt' => '', 'id' => 'finishEnv')); ?>
 		</div>
-		<div id="errorSelectStatic" class="ui-state-error ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+		<div id="errorSelectStatic" class="ui-state-error ui-corner-all" style="display: none; width: 90%; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorSelectStaticMsg" style="display: block;"></span></p>
 		</div>
-		<div id="infoSelectStatic" class="ui-state-highlight ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+		<div id="infoSelectStatic" class="ui-state-highlight ui-corner-all" style="display: none; width: 90%; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoSelectStaticMsg"></span></p>
 		</div>
 </form>
