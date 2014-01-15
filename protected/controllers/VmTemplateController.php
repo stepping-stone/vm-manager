@@ -281,7 +281,9 @@ class VmTemplateController extends Controller
 					$disk->setOverwrite(true);
 					$disk->attributes = $rdisk->attributes;
 					if ('disk' == $disk->sstDevice) {
-						$disk->sstVolumeCapacity = $model->sstVolumeCapacity;
+						if ('vda' == $disk->sstDisk) {
+							$disk->sstVolumeCapacity = $model->sstVolumeCapacity;
+						}
 						$storagepool = $vmpool->getStoragePool();
 						$templatesdir = substr($storagepool->sstStoragePoolURI, 7);
 						$names = CPhpLibvirt::getInstance()->createVolumeFile($templatesdir, $storagepool->sstStoragePool, $node->getLibvirtUri(), $disk->sstVolumeCapacity);
