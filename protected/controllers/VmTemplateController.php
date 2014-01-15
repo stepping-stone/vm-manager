@@ -1169,9 +1169,8 @@ class VmTemplateController extends Controller
       <td style="text-align: right"><b>VM UUID:</b></td>
       <td>{$vm->sstVirtualMachine}</td>
       <td rowspan="3" style="padding-left: 30px; vertical-align: top;">
-      	<form id="fmachinemode_{$vm->sstVirtualMachine}" action="#">
 EOS;
-		echo CHtml::hiddenField('dn', $dn);
+		echo CHtml::hiddenField('dn', $dn, array('id' => 'dn_' . $vm->sstVirtualMachine));
 		echo '<b>' . CHtml::label(Yii::t('vmtemplate', 'MachineMode'), 'machinemode') . ':</b><br/>';
 		$machinemode = $vm->sstVirtualMachineMode;
 		if (is_null($machinemode)) {
@@ -1183,18 +1182,16 @@ EOS;
 			'ready for use' => Yii::t('vmtemplate', 'ready for use')),
 			array('id' => 'machinemode_' . $vm->sstVirtualMachine)
 		);
-		echo '<p id="asdf"></p>';
-		echo '</form>';
+		echo '<div id="message_' . $vm->sstVirtualMachine . '" class="flash-error" style="margin-top: 10px; display: none;"></div>';
 		echo <<< EOS
 <script type="text/javascript">
-	$("#fmachinemode_{$vm->sstVirtualMachine}").submit(function(event) {
-		event.stopPropagation();
-		$.post('{$machinemodeUrl}', $("#fmachinemode_{$vm->sstVirtualMachine}").serialize(), function(data){
-			$("#asdf").append('set');
+	$("#machinemode_{$vm->sstVirtualMachine}").change(function(event) {
+		event.stopImmediatePropagation();
+		$.post('{$machinemodeUrl}', $("#machinemode_{$vm->sstVirtualMachine}, #dn_{$vm->sstVirtualMachine}").serialize(), function(data){
+			if (data.err) {
+				$("#message_{$vm->sstVirtualMachine}").text(data.msg).show();
+			}
 		}, "json");
-	});
-	$("#machinemode_{$vm->sstVirtualMachine}").change(function() {
-		$("#fmachinemode_{$vm->sstVirtualMachine}").submit();
 	});
 </script>
 EOS;
@@ -2117,10 +2114,12 @@ EOS;
 			$template = LdapVmFromTemplate::model()->findByDn($_POST['dn']);
 			$template->setOverwrite(true);
 			$template->sstVirtualMachineMode = $_POST['machinemode'];
-			if ($template->save(false)) {
-				$json = array('err' => false, 'msg' => Yii::t('vmtemplate', 'Canceled'));
+			try {
+				$template->save(false);
+				$json = array('err' => false, 'msg' => '');
 			}
-			else {
+			catch(CLdapException $e) {
+				$json = array('err' => true, 'msg' => $e->getMessage());
 			}
 		}
 		$this->sendJsonAnswer($json);
