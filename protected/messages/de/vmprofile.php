@@ -49,7 +49,7 @@ return array (
   'step2' => 'Schritt II',
   'step2text' => 'Wenn notwenig bitte die vordefinierten Werte überschreiben!',
   'title' => 'Titel',
-  'Please use only a-z, A-Z, 0-9, the space and the _ character.' => 'Bitte nur die Zeichen a-z, A-Z, 0-9, _ und das Leerzeichen benutzen.',
+  'Please use only a-z, A-Z, 0-9, the space and one of this "_.-" characters.' => 'Bitte nur die Zeichen a-z, A-Z, 0-9, das Leerzeichen und eines von diesen "_.-" Zeichen sbenutzen.',
   'Upload finished' => 'Die Datei ist hochgeladen!',
   'Upload finished title' => 'Fertig',
   'Unload message' => 'Achtung: Wenn Sie diese Seite verlassen wird der Upload gestoppt!\\nWollen Sie den Upload beenden?',

@@ -52,7 +52,7 @@ class VmProfileForm extends CFormModel {
 			array('path, basis, upstatus, name, description, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU, ostype, osversion', 'required', 'on' => 'createOther'),
 			array('upstatus, description, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'update'),
 			array('os', 'safe'),
-			array('name', 'match', 'pattern' => '/^[a-zA-Z0-9_ ]*$/', 'message' => Yii::t('vmprofile', 'Please use only a-z, A-Z, 0-9, the space and the _ character.')),
+			array('name', 'match', 'pattern' => '/^[a-zA-Z0-9_\.\- ]*$/', 'message' => Yii::t('vmprofile', 'Please use only a-z, A-Z, 0-9, the space and one of this "_.-" characters.')),
 			array('name', 'uniqueName',
 				'branches'=>array('ou=linux,ou=virtual machine profiles,ou=virtualization,ou=services','ou=windows,ou=virtual machine profiles,ou=virtualization,ou=services'),
 				'filter'=>'(ou={name})',

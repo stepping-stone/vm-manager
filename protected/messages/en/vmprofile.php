@@ -49,7 +49,7 @@ return array (
   'step2' => 'Step II',
   'step2text' => 'Overwrite the default values if necessary!',
   'title' => 'Title',
-  'Please use only a-z, A-Z, 0-9, the space and the _ character.' => '',
+  'Please use only a-z, A-Z, 0-9, the space and one of this "_.-" characters.' => '',
   'Upload finished' => 'Upload finished!',
   'Upload finished title' => 'Finished',
   'Unload message' => 'Note: If you leave this page the upload is stopped!\\nDo you want to stop the upload?',
