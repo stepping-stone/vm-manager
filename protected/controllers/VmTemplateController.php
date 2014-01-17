@@ -518,40 +518,31 @@ class VmTemplateController extends Controller
 			$vm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($dn);
 			if (!is_null($vm)) {
 				if (!$vm->isActive()) {
-					//echo 'delete sstDisk=vda->sstSourceFile';
-					$vda = $vm->devices->getDiskByName('vda');
 					$libvirt = CPhpLibvirt::getInstance();
-					if (!$libvirt->deleteVolumeFile($vda->sstSourceFile)) {
-						$this->sendAjaxAnswer(array('error' => 1, 'message' => 'Unable to delete Volume File for Vm Template \'' . $vm->sstDisplayName . '\'!'));
+					$message = '';
+					$disks = $vm->devices->getDisksByDevice('disk');
+					foreach($disks as $disk) {
+						if (!$libvirt->deleteVolumeFile($disk->sstSourceFile)) {
+							$message .= 'Unable to delete Volume File \'' . $diks->sstDisk . '\' for Vm \'' . $vm->sstDisplayName . '\'!<br/>';
+						}
+					}
+
+					// delete IP
+					if (!is_null($vm->network)) {
+						foreach($vm->network as $network) {
+							$network->delete();
+						}
+					}
+					
+					$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
+
+					// delete VM Template
+					$vm->delete(true);
+					if ('' != $message) {
+						$this->sendAjaxAnswer(array('error' => 1, 'message' => $message));
 					}
 					else {
-						// delete IP
-						//echo '<pre>delete IP ' . print_r($vm->dhcp, true) . '</pre>';
-// 						if (!is_null($vm->dhcp)) {
-// 							$vm->dhcp->delete();
-// 						}
-						if (!is_null($vm->network)) {
-							foreach($vm->network as $network) {
-								$network->delete();
-							}
-						}
-						
-						// delete User assign
-/*
-						$criteria = array(
-							'branchDn'=>'ou=people,ou=' . Yii::app()->user->realm . ',ou=authentication,ou=virtualization,ou=services',
-							'depth'=>true,
-							'attr'=>array('sstVirtualMachinePool'=>$vm->sstVirtualMachinePool));
-						$userAssigns = CLdapRecord::model('LdapUserAssignVmPool')->findAll($criteria);
-						foreach($userAssigns as $userAssign) {
-							$userAssign->removeVmAssignment($vm->sstVirtualMachine);
-						}
-*/
-						
-						$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
-
-						// delete VM Template
-						$vm->delete(true);
+						// don't send data if no error!!!
 					}
 				}
 				else {

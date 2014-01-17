@@ -275,36 +275,33 @@ class VmController extends Controller
 			if (!is_null($vm)) {
 				if (!$vm->isActive()) {
 					// delete sstDisk=vda->sstSourceFile
-					$vda = $vm->devices->getDiskByName('vda');
 					$libvirt = CPhpLibvirt::getInstance();
-					if (!$libvirt->deleteVolumeFile($vda->sstSourceFile)) {
-						$this->sendAjaxAnswer(array('error' => 1, 'message' => 'Unable to delete Volume File for Vm \'' . $vm->sstDisplayName . '\'!'));
+					$message = '';
+					$disks = $vm->devices->getDisksByDevice('disk');
+					foreach($disks as $disk) {
+						if (!$libvirt->deleteVolumeFile($disk->sstSourceFile)) {
+							$message .= 'Unable to delete Volume File \'' . $diks->sstDisk . '\' for Vm \'' . $vm->sstDisplayName . '\'!<br/>';
+						}
+					}
+
+					// TODO: CWI remove also sstActiveGoldenImage from VmPool if this VM is that golden image
+						
+					// delete IP
+					if (!is_null($vm->network)) {
+						foreach($vm->network as $network) {
+							$network->delete();
+						}
+					}
+					
+					$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
+
+					// delete VM
+					$vm->delete(true);
+					if ('' != $message) {
+						$this->sendAjaxAnswer(array('error' => 1, 'message' => $message));
 					}
 					else {
-						// delete IP
-						//echo '<pre>delete IP ' . print_r($vm->dhcp, true) . '</pre>';
-						if (!is_null($vm->network)) {
-							foreach($vm->network as $network) {
-								$network->delete();
-							}
-						}
-
-						// delete User assign
-/*
-						$criteria = array(
-							'branchDn'=>'ou=people,ou=' . Yii::app()->user->realm . ',ou=authentication,ou=virtualization,ou=services',
-							'depth'=>true,
-							'attr'=>array('sstVirtualMachinePool'=>$vm->sstVirtualMachinePool));
-						$userAssigns = CLdapRecord::model('LdapUserAssignVmPool')->findAll($criteria);
-						foreach($userAssigns as $userAssign) {
-							$userAssign->removeVmAssignment($vm->sstVirtualMachine);
-						}
-*/
-						
-						$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
-
-						// delete VM
-						$vm->delete(true);
+						// don't send data if no error!!!
 					}
 				}
 				else {
@@ -1173,18 +1170,11 @@ EOS;
 				else if ('Desktop' == $vm->sstVirtualMachineSubType || 'Server' == $vm->sstVirtualMachineSubType) {
 					if ($libvirt->destroyVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine))) {
 
-						// delete User assign
-/*
-						$criteria = array(
-							'branchDn'=>'ou=people,ou=' . Yii::app()->user->realm . ',ou=authentication,ou=virtualization,ou=services',
-							'depth'=>true,
-							'attr'=>array('sstVirtualMachinePool'=>$vm->sstVirtualMachinePool));
-						$userAssigns = CLdapRecord::model('LdapUserAssignVmPool')->findAll($criteria);
-						foreach($userAssigns as $userAssign) {
-							$userAssign->removeVmAssignment($vm->sstVirtualMachine);
+						$disks = $vm->devices->getDisksByDevice('disk');
+						foreach($disks as $disk) {
+							@unlink($disk->sstSourceFile);
 						}
-*/
-						@unlink($vm->devices->getDiskByName('vda')->sstSourceFile);
+						//@unlink($vm->devices->getDiskByName('vda')->sstSourceFile);
 						$vm->dhcp->delete(true);
 						$vm->delete(true);
 						$this->sendAjaxAnswer(array('error' => 0, 'refresh' => 1));
