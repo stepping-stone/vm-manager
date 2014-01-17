@@ -2122,27 +2122,37 @@ EOS;
 		$json = array('stacks' => array());
 		$template = LdapVmFromProfile::model()->findByDn($dn);
 		$os = $template->operatingsystem;
-		$envs = LdapConfigurationSoftwareStackEnvironment::model()->findAll(array('attr' => array()));
-		$stacks = LdapConfigurationSoftwareStack::model()->findAll(array('attr' => array('labeledURI' => $os->labeledURI)));
-		$json['length'] = count($stacks);
-		foreach($stacks as $stack) {
-			$data = array();
-			$data['name'] = $stack->sstDisplayName;
-			$data['env'] = array();
-			foreach($stack->sstEnvironmentName as $name) {
-				$key = '??';
-				$envname = '??';
-				foreach($envs as $env) {
-					if ($name == $env->sstEnvironmentName) {
-						$key = $env->uid;
-						$envname = $env->sstDisplayName;
-						break;
+		if (!is_null($os)) {
+			$envs = LdapConfigurationSoftwareStackEnvironment::model()->findAll(array('attr' => array()));
+			$stacks = LdapConfigurationSoftwareStack::model()->findAll(array('attr' => array('labeledURI' => $os->labeledURI)));
+			$json['length'] = count($stacks);
+			foreach($stacks as $stack) {
+				$data = array();
+				$data['name'] = $stack->sstDisplayName;
+				$data['env'] = array();
+				foreach($stack->sstEnvironmentName as $name) {
+					$key = '??';
+					$envname = '??';
+					foreach($envs as $env) {
+						if ($name == $env->sstEnvironmentName) {
+							$key = $env->uid;
+							$envname = $env->sstDisplayName;
+							break;
+						}
 					}
+					$data['env'][$key] = $envname;
 				}
-				$data['env'][$key] = $envname;
+				$json['stacks'][$stack->getDn()] = $data;
 			}
-			$json['stacks'][$stack->getDn()] = $data;
 		}
+		else {
+			$json['stacks'] = null;
+		}
+		$config = LdapConfigurationHostname::model()->findAll(array('filterName' => 'all'));
+		$json['hostname'] = $config[0]->getNextHostname();
+		$json['fullname'] = $json['hostname'] . '.' . $config[0]->sstNetworkDomainName;
+		$json['domainname'] = $config[0]->sstNetworkDomainName;
+		
 		$this->sendJsonAnswer($json);
 	}
 }

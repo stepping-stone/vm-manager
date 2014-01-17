@@ -678,20 +678,33 @@ function selectStaticPool(id)
 		height: 'auto',
 		modal: true,
 		open: function(event, ui) {
+			$('#selectStaticOkButton').attr('disabled', 'disabled');
+			$('#selectStaticOkButton').addClass('ui-state-disabled');
 			$.get('{$getPersistentCreationDataUrl}', {'dn': row['dn']}, function(data) {
 				$("#finishId").val(id);
-				// defined as 'global'
+				$("#finishPool").val("");
+				$("#finishNode").val("").empty();
+				$("#finishStack").val("");
+				$("#finishEnv").val("");
+				$("#displayname").val(data.fullname);
+				$("#finishDisplayname").val(data.fullname);
+				$("#finishHostname").val(data.hostname);
+				$("#finishDomainname").val(data.domainname);
+				// softwarestacks defined as 'global'
 				softwarestacks = data.stacks;
-				if (0 < data.length) {
-					$("#finishStack").empty().append($('<option value=""></option>'));
+				if (null != softwarestacks) {
+					$("#finishStack").empty().prop('disabled', false).append($('<option value=""></option>'));
 					$.each(softwarestacks, function(key, val) {
 						$("#finishStack").append($('<option value="' + key + '">' + val.name + '</option>'));
 					});
+					$("#finishEnv").empty().prop('disabled', false);
 				}
 				else {
-					$("#finishStack").empty().append($('<option value="???"></option>')).prop('dsabled', true);
-					$("#finishEnv").empty().prop('dsabled', true);
+					$("#finishStack").empty().prop('disabled', true);
+					$("#finishEnv").empty().prop('disabled', true);
 				}			
+				$('#selectStaticOkButton').removeAttr('disabled');
+				$('#selectStaticOkButton').removeClass('ui-state-disabled');
 			}, 'json');
 		},
 		buttons:  [
@@ -699,18 +712,6 @@ function selectStaticPool(id)
 				text: '{$selectStaticOkButtonTxt}',
 				id: 'selectStaticOkButton',
 				click: function() {
-// 					var pool = $("#staticpoolSelection").val();
-// 					var node = $("#staticnodeSelection").val();
-// 					var subtype = '???';
-// 					if ( $('#radiosubtype1').attr('checked')) {
-// 						subtype = $('#radiosubtype1').val();
-// 					}
-// 					else if ( $('#radiosubtype2').attr('checked')) {
-// 						subtype = $('#radiosubtype2').val();
-// 					}
-//					finish(id, selected[0], $('#displayname').val(), subtype, $('#hostname').val(), $('#domainname').val());
-					var a = $("#finishForm");
-					var b = $("#finishForm").serialize();
 					finish($("#finishId").val(), $("#finishForm").serialize());
 				}
 			},
@@ -1016,11 +1017,6 @@ EOS
 <div id="finishdialog" title="<?php echo Yii::t('vm', 'Create persistent VM'); ?>" style="display: none;">
 <form id="finishForm">
 <?php 
-	//$name = isset($_GET['name']) ? $_GET['name'] : '';
-	$config = LdapConfigurationHostname::model()->findAll(array('filterName' => 'all'));
-	$hostname = $config[0]->getNextHostname();
-	 
-	$name = $hostname . '.' . $config[0]->sstNetworkDomainName;
 	
 	Yii::app()->clientScript->registerScript('finishdialog', <<<EOS
 $("#finishPool").change(function() {
@@ -1072,10 +1068,10 @@ EOS
 		<br/>
 		<div>
 			<label for="displayname" style="width: 150px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationName'); ?> </label>
-			<input type="text" id="displayname" name="displayname" disabled="disabled" value="<?php echo $name; ?>"/>
-			<input type="hidden" id="finishDisplayname" name="FinishForm[displayname]" value="<?php echo $name; ?>"/>
-			<input type="hidden" id="finishHostname" name="FinishForm[hostname]" value="<?php echo $hostname; ?>" />
-			<input type="hidden" id="finishDomainname" name="FinishForm[domainname]" value="<?php echo $config[0]->sstNetworkDomainName; ?>" />
+			<input type="text" id="displayname" name="displayname" disabled="disabled" value=""/>
+			<input type="hidden" id="finishDisplayname" name="FinishForm[displayname]" value=""/>
+			<input type="hidden" id="finishHostname" name="FinishForm[hostname]" value="" />
+			<input type="hidden" id="finishDomainname" name="FinishForm[domainname]" value="" />
 		</div>
 		<br/>
 		<div id="radiosubtype" style="">
