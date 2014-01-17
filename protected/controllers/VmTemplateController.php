@@ -1676,8 +1676,13 @@ EOS;
 								$prov = $vm->sstThinProvisioningVirtualMachine;
 								foreach($vm->sstThinProvisioningVirtualMachine as $uuid) {
 									$othervm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $uuid)));
-									$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, 'vda');
-									if (true === $info) {
+									if (!is_null($othervm)) {
+										$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, 'vda');
+										if (true === $info) {
+											unset($prov[array_search($uuid, $prov)]);
+										}
+									}
+									else {
 										unset($prov[array_search($uuid, $prov)]);
 									}
 								}
