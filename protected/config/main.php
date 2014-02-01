@@ -36,7 +36,7 @@ return CMap::mergeArray(
     require(dirname(__FILE__).'/vm_config.php'),
 	array(
 	'basePath' => dirname(__FILE__) . DIRECTORY_SEPARATOR . '..',
-	'name' => 'FOSS-Cloud',
+	'name' => 'stoney cloud',
 	'language'          =>'en',
 	//'homeUrl' => '/site/login',
 
