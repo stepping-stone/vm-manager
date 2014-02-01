@@ -44,7 +44,7 @@ $this->title='Welcome to the FOSS-Cloud';
 </div>
 <div style="float: right;">
 <h2>Links</h2>
-<a target="blank" href="http://wiki.foss-cloud.org/">Documentation</a><br/>
-<a target="blank" href="http://wiki.foss-cloud.org/wiki.foss-cloud.org/index.php/Spice-Client">Spice-Client (with protocol handler) download</a>
+<a target="blank" href="http://wiki.stoney-cloud.org/">Documentation</a><br/>
+<a target="blank" href="http://wiki.stoney-cloud.org/index.php/stoney_cloud:_virt-viewer">Download virt-viewer (with protocol handler)</a>
 </div> <br style="clear: both;" />
 
