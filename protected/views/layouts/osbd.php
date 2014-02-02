@@ -166,9 +166,9 @@ EOS
 		</div>
 	</div>
 	<div id="footer">
-		Version <?= $version; ?><br/>
-		Copyright &copy; <?php echo date('Y'); ?> by FOSS-Group.<br/>
-		All Rights Reserved.<br/>
+		stoney cloud <?= $version; ?><br/>
+		<!-- Copyright &copy; <?php echo date('Y'); ?> by FOSS-Group.<br/>
+		All Rights Reserved.<br/> -->
 	</div><!-- footer -->
 </div><!-- page -->
 </body>
