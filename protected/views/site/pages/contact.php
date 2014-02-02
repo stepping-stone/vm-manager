@@ -7,6 +7,7 @@
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Michael Eichenberger <michael.eichenberger@stepping-stone.ch>
  *
  * Licensed under the EUPL, Version 1.1 or – as soon they
  * will be approved by the European Commission - subsequent
@@ -33,10 +34,19 @@ $this->breadcrumbs=array(
 	'Contact',
 );
 
-$this->title = 'Contact us';
+$this->title = 'Contact information';
 ?>
-<ul>
-<li><p>If you have business inquiries or other questions, you'll find the contact information <a target="blank" href="http://www.foss-group.de">here</a></p></li>
-<li><p>If you need community support, you'll find the contact information <a target="blank" href="http://sourceforge.net/projects/foss-cloud/support">here</a></p></li>
-<li><p>If you need professional, commercial support, you'll find the contact information <a target="blank" href="http://wiki.foss-cloud.org/index.php/Support">here</a></p></li>
-</ul>
+
+<h2>Commercial Support</h2>
+<p>
+<strong>stepping stone GmbH</strong><br />Neufeldstrasse 9<br />CH-3012 Bern<br />Switzerland
+</p>
+<p>Telefon: +41 31 332 53 63<br />E-Mail: <a href="mailto:info@stepping-stone.ch">info(at)stepping-stone.ch</a><br />Internet: <a href="http://www.stepping-stone.ch" target="blank">www.stepping-stone.ch</a></p>
+<p>E-Mail: <a href="mailto:info@stoney-cloud.com">info(at)stoney-cloud.com</a><br />Internet: <a href="http://www.stoney-cloud.com" target="blank">www.stoney-cloud.com</a>
+</p>
+<p>Company number: CH-035.4.032.794-9<br />Value Added Tax number: 587 641<br />Autonomous System Number: AS48461</p>
+</p>
+<h2>Source Code and Issue Trackers</h2>
+<p>The source code and the issue trackers are location on <a href="https://github.com/stepping-stone/" target="blank">GitHub</a></p>
+<h2>Documenation</h2>
+<p>The documention can be found online under <a href="http://www.stoney-cloud.org" target="blank">www.stoney-cloud.org</a>.</p>
