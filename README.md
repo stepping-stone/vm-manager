@@ -1,7 +1,7 @@
 vm-manager
 ==========
 
-The FOSS-Cloud webinterface.
+The stoney cloud web interface.
 
 ### Requirements
 
