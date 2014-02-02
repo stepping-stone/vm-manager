@@ -7,6 +7,7 @@
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Michael Eichenberger <michael.eichenberger@stepping-stone.ch>
  *
  * Licensed under the EUPL, Version 1.1 or – as soon they
  * will be approved by the European Commission - subsequent
@@ -33,75 +34,38 @@ $this->breadcrumbs=array(
 	'About',
 );
 
-$this->title = 'About';
+$this->title = 'About stoney cloud';
 ?>
-<p>The FOSS-Cloud is the foundation to build Windows or Linux based SaaS-, Terminal Server-, Virtual Desktop Infrastructure (VDI) or virtual Server-Environments.</p>
-<p>The FOSS-Cloud solution is the most advanced pure Open Source Cloud in the marketplace today. </p>
-<p>Before using, the FOSS-Cloud team would like to remind you that the primary means of sustaining the development of FOSS-Cloud is via contributions by users such as yourself. FOSS-Cloud is now and will continue to be totally free of charge; however, it takes money and resources to make FOSS-Cloud available. If you are able, please consider donating to the FOSS-Cloud Project.</p>
-<div  style="float: left;">
-<p><a href="http://sourceforge.net/donate/index.php?group_id=390416"><img src="<?php echo Yii::app()->baseUrl;?>/images/project-support.jpg" width="88" height="32" border="0" alt="Support This Project" /> </a></p>
-<p>Thank you for using FOSS-Cloud</p>
-<p>The FOSS-Cloud Team</p>
-</div>
-<div style="float: right;">
-<h2>Links</h2>
-<a target="blank" href="http://wiki.foss-cloud.org/">Documentation</a><br/>
-<a target="blank" href="http://www.foss-cloud.org/en/index.php/Spice-Client">Spice-Client (with protocol handler) download</a>
-</div> <br style="clear: both;" />
-<br/><br/>
 
-<h2>Version <i><?= Yii::app()->getSession()->get('version', ''); ?></i></h2><br/>
-<h2>FOSS-Cloud ID <i><?= Yii::app()->getSession()->get('cloudid', ''); ?></i></h2><br/>
-<h2>Projects incorporated within the FOSS-Cloud</h2>
-<table bgcolor="white"    border="1" cellpadding="10" cellspacing="0" >
-<tr>
-<td><b>Open Source Solution</b></td><td><b>Information</b></td><td><b>License</b></td>
-</tr>
-<tr>
-<td>Gentoo</td><td> <a target="blank" href="http://www.gentoo.org">Web-Site</a></td><td> <a target="blank" href="http://www.gnu.org/licenses">GPL-2</a>
-</tr>
-<tr>
-<td>SystemRescueCd</td><td> <a target="blank" href="http://www.sysresccd.org">Web-Site</a></td><td> <a target="blank" href="http://www.opensource.org/licenses/gpl-license.html">GPL-2</a>
-</tr>
-<tr>
-<td>KVM, Kernel Based Virtual Machine</td><td> <a target="blank" href="http://www.linux-kvm.org">Web-Site</a></td><td> <a target="blank" href="http://www.gnu.org/licenses">GPL</a>
-</tr>
-<tr>
-<td>Qemu, generic and open source machine emulator and virtualizer</td><td> <a target="blank" href="http://wiki.qemu.org/Index.html">Web-Site</a></td><td> <a target="blank" href="http://www.gnu.org/licenses">GPL</a>
-</tr>
-<tr>
-<td>Spice, protocol</td><td> <a target="blank" href="http://www.spice-space.org">Web-Site</a></td><td> <a target="blank" href="http://www.gnu.org/licenses">GPL</a>
-</tr>
-<tr>
-<td>libvirt</td><td> <a target="blank" href="http://www.libvirt.org/">Web-Site</a></td><td> <a target="blank" href="http://www.gnu.org/licenses/lgpl-2.1.html">LGPLv2</a>
-</tr>
-<tr>
-<td>PHP-libvirt</td><td> <a target="blank" href="http://libvirt.org/php/">Web-Site</a></td><td> <a target="blank" href="http://www.php.net/license/3_01.txt">PHP-3.01</a>
-</tr>
-<tr>
-<td>PHP, scripting language</td><td> <a target="blank" href="http://www.php.net">Web-Site</a></td><td> <a target="blank" href="http://www.php.net/license/3_01.txt">PHP-3.01</a>
-</tr>
-<tr>
-<td>Yii Framework (<?=Yii::getVersion();?>)</td><td> <a target="blank" href="http://www.yiiframework.com">Web-Site</a></td><td> <a target="blank" href="http://www.yiiframework.com/license/">BSD</a>
-</tr>
-<tr>
-<td>FOSS-Cloud, Cloud technology</td><td> <a target="blank" href="http://www.foss-cloud.org">Web-Site</a></td><td> <a target="blank" href="http://ec.europa.eu/idabc/eupl.html">EUPL</a>
-</tr>
+<h2>Version</h2>
+<p><?= Yii::app()->getSession()->get('version', ''); ?></p>
+<h2>stoney cloud ID</h2>
+<p><?= Yii::app()->getSession()->get('cloudid', ''); ?></p>
+<h2>Projects incorporated within the stoney cloud</h2>
+<table bgcolor="white" border="1" cellpadding="10" cellspacing="0">
+<tr><td><strong>Open Source Solution</strong></td><td><strong>License</strong></td></tr>
+<tr><td><a target="blank" href="http://www.gentoo.org">Gentoo</a> is a free operating system based on Linux, that can be automatically optimized and customized for just about any application or need.</td><td><a target="blank" href="http://www.gnu.org/licenses">GPL</a></td></tr>
+<tr><td><a target="blank" href="http://www.sysresccd.org">SystemRescueCD</a> is an operating system for the x86 computer platform, which is used to kick-start the stoney cloud installation.</td><td><a target="blank" href="http://www.opensource.org/licenses/gpl-license.html">GPL</a></td></tr>
+<tr><td><a target="blank" href="http://www.linux-kvm.org">KVM</a> (Kernel-based Virtual Machine) is a virtualization infrastructure for the Linux kernel which turns it into a hypervisor.</td><td><a target="blank" href="http://www.gnu.org/licenses">GPL</a></td></tr>
+<tr><td><a target="blank" href="http://wiki.qemu.org/Index.html">QEMU</a> (short for "Quick EMUlator") is a free and open-source hosted hypervisor that performs hardware virtualization.</td><td><a target="blank" href="http://www.gnu.org/licenses">GPL</a></td></tr>
+<tr><td>The <a target="blank" href="http://www.spice-space.org">Spice</a> project aims to provide a complete open source solution for interaction with virtualized desktop devices.</td><td><a target="blank" href="http://www.gnu.org/licenses">GPL</a></td></tr>
+<tr><td><a target="blank" href="http://www.libvirt.org/">libvirt</a> is an open source API, daemon and management tool for managing platform virtualization.</td><td><a target="blank" href="http://www.gnu.org/licenses/lgpl-2.1.html">LGPL</a></td></tr>
+<tr><td><a target="blank" href="http://libvirt.org/php/">libvirt-php</a> is a php module that provides PHP bindings for libvirt virtualization toolkit and therefore you can access libvirt directly from your PHP scripts with no need to have virt-manager or libvirt-based CLI/GUI tools installed.</td><td><a target="blank" href="http://www.php.net/license/">PHP</a><td></tr>
+<tr><td><a target="blank" href="http://www.php.net">PHP</a> is a server-side scripting language designed for web development but also used as a general-purpose programming language.</td><td><a target="blank" href="http://www.php.net/license/">PHP</a></td></tr>
+<tr><td><a target="blank" href="http://www.yiiframework.com">Yii</a> (<?=Yii::getVersion();?>) is an open source, object-oriented, component-based MVC PHP web application framework.</td><td> <a target="blank" href="http://www.yiiframework.com/license/">BSD</a></td></tr>
 </table>
 
-
-<h2>Companies involved into the FOSS-Cloud-Project</h2>
-<table bgcolor="white"    border="1" cellpadding="10" cellspacing="0" >
-<tr>
-<td><b>Company</b></td><td><b>Informations</b></td>
-</tr>
-<tr>
-<td><a target="blank" href="http://www.FOSS-Group.ch">FOSS-Group</a></td><td>Location Basel (Switzerland) and Freiburg i.Br. (Germany)</td>
-</tr>
-<tr>
-<td><a target="blank" href="http://www.stepping-stone.ch">stepping stone GmbH</a></td><td>Location Bern (Switzerland)</td>
-</tr>
-<tr>
-<td><a target="blank" href="http://www.limbas.com">Limbas GmbH</a></td><td>Location Munich (Germany)</td>
-</tr>
+<h2>People involved into the stoney cloud project</h2>
+<table bgcolor="white" border="1" cellpadding="10" cellspacing="0">
+<tr><td><strong>Person</strong></td><td><strong>Role</strong></td></tr>
+<tr><td>Christian Affolter (<a target="blank" href="https://github.com/paraenggu">paraenggu</a>)</td><td>stoney cloud installer, firewall libvirt-hooks, operating system, syslog-ng, ...</td></tr>
+<tr><td>Christian Wittkowski (<a target="blank" href="https://github.com/flinx27">flinx27</a>)</td><td>vm-manager</td></tr>
+<tr><td>Christoph Scheurer (<a target="blank" href="https://github.com/cyberfarm">cyberfarm</a>)</td><td>ucarp, testing</td></tr>
+<tr><td>David Vollmer (<a target="blank" href="https://github.com/dukje">dukje</a>)</td><td>firewall libvirt-hooks, testing</td></tr>
+<tr><td>Lucas Bickel (<a target="blank" href="https://github.com/hairmare">hairmare</a>)</td><td>automation, puppet, syslog-ng, ...</td></tr>
+<tr><td>Michael Eichenberger (<a target="blank" href="https://github.com/meichenberger">meichenberger</a>)</td><td>architecture, project management, ldap, ...</td></tr>
+<tr><td>Pascal Jufer (<a target="blank" href="https://github.com/paescuj">paescuj</a>)</td><td>documentation, testing</td></tr>
+<tr><td>Pat Kläy (<a target="blank" href="https://github.com/patklaey">patklaey</a>)</td><td>backup, notification, documentation</td></tr>
+<tr><td>Tatiana Durisova Eichenberger(<a target="blank" href="https://github.com/teichenberger">teichenberger</a>)</td><td>testing</td></tr>
+<tr><td>Tiziano Müller (<a target="blank" href="https://github.com/dev-zero">dev-zero</a>)</td><td>stoney cloud build, libvirt, operating system, documentation, ...</td></tr>
 </table>
