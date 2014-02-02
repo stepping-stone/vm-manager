@@ -7,6 +7,7 @@
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Michael Eichenberger <michael.eichenberger@stepping-stone.ch>
  *
  * Licensed under the EUPL, Version 1.1 or – as soon they
  * will be approved by the European Commission - subsequent
@@ -28,23 +29,19 @@
  *
  */
 
-$this->title='Welcome to the FOSS-Cloud';
-//$user = CLdapRecord::model('LdapUser')->findByDn('uid=4000002,ou=people');
-//echo $user->isAdmin() ? 'true' : 'false';
-//$pools = $user->assign->pools;
-//echo '<pre>' . print_r($pools, true) . '</pre>';
+$this->title='Welcome to your stoney cloud installation';
 ?>
-<p>The FOSS-Cloud is the foundation to build Windows or Linux based SaaS-, Terminal Server-, Virtual Desktop Infrastructure (VDI) or virtual Server-Environments.</p>
-<p>The FOSS-Cloud solution is the most advanced Open Source Cloud in the marketplace today. </p>
-<p>Before using, the FOSS-Cloud team would like to remind you that the primary means of sustaining the development of FOSS-Cloud is via contributions by users such as yourself. FOSS-Cloud is now and will continue to be totally free of charge; however, it takes money and resources to make FOSS-Cloud available. If you are able, please consider donating to the FOSS-Cloud Project.</p>
-<div  style="float: left;">
-<p><a href="http://sourceforge.net/donate/index.php?group_id=390416"><img src="<?php echo Yii::app()->baseUrl;?>/images/project-support.jpg" width="88" height="32" border="0" alt="Support This Project" /> </a></p>
-<p>Thank you for using FOSS-Cloud</p>
-<p>The FOSS-Cloud Team</p>
-</div>
-<div style="float: right;">
+<p>The stoney cloud is an expandable multi-tenant web based Open Source Cloud management solution with service providers as it's target audience.</p>
+<h2>Your Benefits</h2>
+<ul>
+<li>Linux and Windows based virtual machines</li>
+<li>CPU, RAM, disk size and bandwidth freely selectable</li>
+<li>Intuitive web-based administration</li>
+<li>Periodic backups and maintenance work</li>
+</ul>
+<p>Thank you for using stoney cloud!</p>
+<p>Your stoney cloud Team</p>
 <h2>Links</h2>
 <a target="blank" href="http://wiki.stoney-cloud.org/">Documentation</a><br/>
-<a target="blank" href="http://wiki.stoney-cloud.org/index.php/stoney_cloud:_virt-viewer">Download virt-viewer (with protocol handler)</a>
-</div> <br style="clear: both;" />
-
+<a target="blank" href="http://wiki.stoney-cloud.org/index.php/stoney_cloud:_virt-viewer">virt-viewer download</a>
+</div>
