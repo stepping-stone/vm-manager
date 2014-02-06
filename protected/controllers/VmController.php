@@ -72,9 +72,10 @@ class VmController extends Controller
 				'static' => true,
 				'items' => array(
 					array(
-						'label' => Yii::t('menu', 'Download Spice Client'),
-						'url' => 'http://www.foss-cloud.org/en/index.php/Spice-Client',
-						'itemOptions' => array('title' => Yii::t('menu', 'Spice Client Tooltip')),
+						'label' => Yii::t('menu', 'Download virt-viewer'),
+						'url' => 'http://wiki.stoney-cloud.org/index.php/stoney_cloud:_virt-viewer',
+						'itemOptions' => array('title' => Yii::t('menu', 'virt-view Tooltip')),
+						'linkOptions' => array('target' => '_blank'),
 					)
 				)
 			);
@@ -896,7 +897,7 @@ EOS;
 										$state = 'preparing';
 										$info = $libvirt->checkBlockJob($vm->node->getLibvirtUri(), $vm->sstVirtualMachine, 'vda');
 										if (true !== $info) {
-											$answer['progress'] = $info['cur'] / $info['end'] * 100;
+											$answer['progress'] = round($info['cur'] / $info['end'] * 100, 1);
 										} 
 									}
 								}

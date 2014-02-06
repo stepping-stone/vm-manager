@@ -52,10 +52,10 @@ class VmListController extends Controller
 			'static' => true,
 			'items' => array(
 				array(
-					'label' => Yii::t('menu', 'Download Spice Client'),
-					'url' => 'http://www.foss-cloud.org/en/index.php/Spice-Client',
-					'itemOptions' => array('title' => Yii::t('menu', 'Spice Client Tooltip')),
-					'linkOptions' => array('target' => '_blank')
+                                        'label' => Yii::t('menu', 'Download virt-viewer'),
+                                        'url' => 'http://wiki.stoney-cloud.org/index.php/stoney_cloud:_virt-viewer',
+                                        'itemOptions' => array('title' => Yii::t('menu', 'virt-view Tooltip')),
+					'linkOptions' => array('target' => '_blank'),
 				)
 			)
 		);
