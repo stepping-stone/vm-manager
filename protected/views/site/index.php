@@ -43,5 +43,5 @@ $this->title='Welcome to your stoney cloud installation';
 <p>Your stoney cloud Team</p>
 <h2>Links</h2>
 <a target="blank" href="http://wiki.stoney-cloud.org/">Documentation</a><br/>
-<a target="blank" href="http://wiki.stoney-cloud.org/index.php/stoney_cloud:_virt-viewer">virt-viewer download</a>
+<a target="blank" href="http://wiki.stoney-cloud.org/index.php/stoney_cloud:_virt-viewer">Download virt-viewer</a>
 </div>
