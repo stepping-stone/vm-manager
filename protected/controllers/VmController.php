@@ -894,11 +894,18 @@ EOS;
 								if ('persistent' === $vm->sstVirtualMachineType) {
 									$templates = LdapVmFromTemplate::model()->findAll(array('attr' => array('sstVirtualMachineType' => 'template', 'sstThinProvisioningVirtualMachine' => $vm->sstVirtualMachine)));
 									if (0 < count($templates)) {
-										$state = 'preparing';
-										$info = $libvirt->checkBlockJob($vm->node->getLibvirtUri(), $vm->sstVirtualMachine, 'vda');
-										if (true !== $info) {
-											$answer['progress'] = round($info['cur'] / $info['end'] * 100, 1);
+										$state .= 'streaming';
+										$cur = 0;
+										$end = 0;
+										$disks = $vm->devices->getDisksByDevice('disk');
+										foreach($disks as $disk) {
+											$info = $libvirt->checkBlockJob($vm->node->getLibvirtUri(), $vm->sstVirtualMachine, $disk->sstDisk);
+											if (true !== $info) {
+												$cur += $info['cur'];
+												$end += $info['end'];
+											}
 										} 
+										$answer['progress'] = round($cur / $end * 100, 1);
 									}
 								}
 								switch($status['state']) {

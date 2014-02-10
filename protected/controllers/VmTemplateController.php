@@ -1678,9 +1678,13 @@ EOS;
 								foreach($vm->sstThinProvisioningVirtualMachine as $uuid) {
 									$othervm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $uuid)));
 									if (!is_null($othervm)) {
-										$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, 'vda');
-										if (true === $info) {
-											unset($prov[array_search($uuid, $prov)]);
+										$disks = $vm->devices->getDisksByDevice('disk');
+										foreach($disks as $disk) {
+											$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, $disk->sstDisk);
+											if (true === $info) {
+												unset($prov[array_search($uuid, $prov)]);
+												break;
+											}
 										}
 									}
 									else {
