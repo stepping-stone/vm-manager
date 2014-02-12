@@ -1037,14 +1037,52 @@ EOS;
 							//$rdisk->removeAttributesByObjectClass('sstVirtualizationVirtualMachineDiskDefaults');
 							$disk->setOverwrite(true);
 							$disk->attributes = $rdisk->attributes;
+// 							if ('disk' == $disk->sstDevice) {
+// 								$templatesdir = substr($storagepool->sstStoragePoolURI, 7);
+// 								//$goldenimagepath = $vm->devices->getDiskByName('vda')->sstSourceFile;
+// 								$goldenimagepath = $vm->devices->getDiskByName('vda')->sstVolumeName . '.qcow2';
+// 								$names = CPhpLibvirt::getInstance()->createBackingStoreVolumeFile($templatesdir, $storagepool->sstStoragePool, $goldenimagepath, $vmcopy->node->getLibvirtUri(), $disk->sstVolumeCapacity);
+// 								if (false !== $names) {
+// 									$disk->sstVolumeName = $names['VolumeName'];
+// 									$disk->sstSourceFile = $names['SourceFile'];
+// 								}
+// 								else {
+// 									$hasError = true;
+// 									$vmcopy->delete(true);
+// 									$this->sendAjaxAnswer(array('error' => 1, 'message' => 'Unable to create backingstore volume!'));
+// 									break;
+// 								}
+// 							}
+							
 							if ('disk' == $disk->sstDevice) {
 								$templatesdir = substr($storagepool->sstStoragePoolURI, 7);
-								//$goldenimagepath = $vm->devices->getDiskByName('vda')->sstSourceFile;
-								$goldenimagepath = $vm->devices->getDiskByName('vda')->sstVolumeName . '.qcow2';
-								$names = CPhpLibvirt::getInstance()->createBackingStoreVolumeFile($templatesdir, $storagepool->sstStoragePool, $goldenimagepath, $vmcopy->node->getLibvirtUri(), $disk->sstVolumeCapacity);
+								$diskpath = $disk->sstSourceFile;
+								if ('network' === $rdisk->sstType) {
+									$diskpath = str_replace(Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][1],
+											Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-templates'][0], $rdisk->sstSourceName);
+								}
+								$names = CPhpLibvirt::getInstance()->createBackingStoreVolumeFile($templatesdir, $storagepool->sstStoragePool, $diskpath, $usedNode->getLibvirtUri(), $disk->sstVolumeCapacity);
 								if (false !== $names) {
 									$disk->sstVolumeName = $names['VolumeName'];
-									$disk->sstSourceFile = $names['SourceFile'];
+									$sstSourceFile = $names['SourceFile'];
+										
+									if ('network' === $rdisk->sstType) {
+										$disk->sstSourceName = str_replace(Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-dynamic'][0],
+												Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][1], $sstSourceFile);
+										$disk->sstType = 'network';
+										$disk->sstSourceProtocol = 'gluster';
+										$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName']['vm-dynamic'];
+										$disk->sstSourceFile = '';
+									}
+									else if ('file' === $rdisk->sstType) {
+										$disk->sstSourceFile = $sstSourceFile;
+									}
+									else {
+										$hasError = true;
+										$vmcopy->delete(true);
+										$this->sendAjaxAnswer(array('error' => 1, 'message' => 'sstType=' . $rdisk->sstType . ' not implemented!'));
+										break;
+									}
 								}
 								else {
 									$hasError = true;
@@ -1053,6 +1091,13 @@ EOS;
 									break;
 								}
 							}
+							else if ('network' === $disk->sstType) {
+								$hasError = true;
+								$vmcopy->delete(true);
+								$this->sendAjaxAnswer(array('error' => 1, 'message' => 'sstType=network not implemented!'));
+								break;
+							}
+							
 							$disk->setBranchDn($devices->dn);
 							$disk->save();
 						}
