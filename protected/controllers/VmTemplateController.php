@@ -1162,7 +1162,7 @@ class VmTemplateController extends Controller
       <td>{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
       <td style="text-align: right"><b>VM UUID:</b></td>
       <td>{$vm->sstVirtualMachine}</td>
-      <td rowspan="3" style="padding-left: 30px; vertical-align: top;">
+      <td rowspan="2" style="padding-left: 30px; vertical-align: top;">
 EOS;
 		echo CHtml::hiddenField('dn', $dn, array('id' => 'dn_' . $vm->sstVirtualMachine));
 		echo '<b>' . CHtml::label(Yii::t('vmtemplate', 'MachineMode'), 'machinemode') . ':</b><br/>';
@@ -1196,22 +1196,51 @@ EOS;
       <td style="text-align: right; vertical-align: top;"><b>Memory:</b></td>
       <td style="vertical-align: top;">$memory</td>
       <td style="text-align: right;vertical-align: top;"><b>VM Pool:</b></td>
-      <td>{$vm->vmpool->sstDisplayName}<br/>{$vm->sstVirtualMachinePool}</td>
+      <td style="vertical-align: top;">{$vm->vmpool->sstDisplayName}<br/>{$vm->sstVirtualMachinePool}</td>
     </tr>
     <tr>
       <td style="text-align: right"><b>CPUs:</b></td>
       <td>{$vm->sstVCPU}</td>
+      <td></td><td></td>
+EOS;
+		if (!is_null($vm->sstThinProvisioningVirtualMachine)) {
+			echo <<< EOS
+      <td rowspan="2" style="padding-left: 30px; vertical-align: top;">
+		<b><label>VM's streaming</label></b><br/>
+EOS;
+			foreach($vm->sstThinProvisioningVirtualMachine as $uuid) {
+				$othervm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $uuid)));
+				echo $othervm->sstDisplayName . '<br/>';
+			}
+			echo '</td>';
+		}
+		echo <<< EOS
     </tr>
+    <tr>
 EOS;
 		if ('Golden-Image' !== $vm->sstVirtualMachineSubType) {
 			echo <<< EOS
-    <tr>
-      <td style="text-align: right; vertical-align: top;"><b>IP Adress:</b></td>
-      <td>$ipText</td>
-    </tr>
+      <td style="text-align: right;vertical-align: top;" rowspan="2"><b>IP Adress:</b></td>
+      <td style="vertical-align: top;" rowspan="2">$ipText</td>
 EOS;
+			if (!is_null($vm->operatingsystem)) {
+				echo <<< EOS
+      <td style="text-align: right;vertical-align: top;"><b>OS:</b></td>
+      <td style="vertical-align: top;">{$vm->operatingsystem->getCompleteName()}</td>
+EOS;
+			}
 		}
-		echo '</tbody></table>';
+		echo '</tr><tr>';
+		if ('Golden-Image' !== $vm->sstVirtualMachineSubType) {
+			echo '<td></td><td></td>';
+			if (!is_null($vm->softwarestack)) {
+				echo <<< EOS
+      <td style="text-align: right;vertical-align: top;"><b>Software Stack:</b></td>
+      <td>{$vm->softwarestack->sstDisplayName}<br/>{$vm->softwarestack->environment->sstDisplayName}</td>
+EOS;
+			}
+		}
+		echo '</tr></tbody></table>';
 		if (!is_null($vm->backup)) {
 			echo <<< EOS
 	<br />
