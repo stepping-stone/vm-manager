@@ -1707,13 +1707,17 @@ EOS;
 								foreach($vm->sstThinProvisioningVirtualMachine as $uuid) {
 									$othervm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $uuid)));
 									if (!is_null($othervm)) {
+										$finished = true;
 										$disks = $vm->devices->getDisksByDevice('disk');
 										foreach($disks as $disk) {
 											$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, $disk->sstDisk);
-											if (true === $info) {
-												unset($prov[array_search($uuid, $prov)]);
+											if (true !== $info) {
+												finished = false;
 												break;
 											}
+										}
+										if (finished) {
+											unset($prov[array_search($uuid, $prov)]);
 										}
 									}
 									else {
