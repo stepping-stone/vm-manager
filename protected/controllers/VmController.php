@@ -894,7 +894,7 @@ EOS;
 								if ('persistent' === $vm->sstVirtualMachineType) {
 									$templates = LdapVmFromTemplate::model()->findAll(array('attr' => array('sstVirtualMachineType' => 'template', 'sstThinProvisioningVirtualMachine' => $vm->sstVirtualMachine)));
 									if (0 < count($templates)) {
-										$state .= 'streaming';
+										$answer['statustxt'] = ', streaming';
 										$cur = -1;
 										$end = -1;
 										$disks = $vm->devices->getDisksByDevice('disk');
@@ -906,6 +906,17 @@ EOS;
 											}
 										} 
 										$answer['progress'] = round($cur / $end * 100, 1);
+										if ($cur === $end) {
+											$template = $templates[0];
+											$prov = $template->sstThinProvisioningVirtualMachine;
+											if (in_array($vm->sstVirtualMachine, $prov)) {
+												unset($prov[array_search($vm->sstVirtualMachine, $prov)]);
+												$template->setOverwrite(true);
+												$prov = array_values($prov); // to rebuild index
+												$template->sstThinProvisioningVirtualMachine = $prov;
+												$template->update();
+											}
+										}
 									}
 								}
 								switch($status['state']) {
