@@ -1712,11 +1712,11 @@ EOS;
 										foreach($disks as $disk) {
 											$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, $disk->sstDisk);
 											if (true !== $info) {
-												finished = false;
+												$finished = false;
 												break;
 											}
 										}
-										if (finished) {
+										if ($finished) {
 											unset($prov[array_search($uuid, $prov)]);
 										}
 									}
