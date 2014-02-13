@@ -33,6 +33,14 @@ class LdapVmSoftwareStack extends CLdapRecord {
 	protected $_dnAttributes = array('ou');
 	protected $_objectClasses = array('sstGroupObjectClass', 'sstRelationship', 'labeledURIObject', 'top');
 	
+	public function relations()
+	{
+		return array(
+		// __construct($name,$attribute,$className,$foreignAttribute,$options=array())
+		'environment' => array(self::HAS_ONE, 'sstEnvironmentName', 'LdapConfigurationSoftwareStackEnvironment', 'uid'),
+		);
+	}
+
 	/**
 	 * Returns the static model of the specified LDAP class.
 	 * @return CLdapRecord the static model class
