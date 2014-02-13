@@ -895,8 +895,8 @@ EOS;
 									$templates = LdapVmFromTemplate::model()->findAll(array('attr' => array('sstVirtualMachineType' => 'template', 'sstThinProvisioningVirtualMachine' => $vm->sstVirtualMachine)));
 									if (0 < count($templates)) {
 										$state .= 'streaming';
-										$cur = 0;
-										$end = 0;
+										$cur = -1;
+										$end = -1;
 										$disks = $vm->devices->getDisksByDevice('disk');
 										foreach($disks as $disk) {
 											$info = $libvirt->checkBlockJob($vm->node->getLibvirtUri(), $vm->sstVirtualMachine, $disk->sstDisk);
