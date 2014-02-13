@@ -53,7 +53,7 @@ if (!is_null($libvirturi)) {
 	echo '<li><b>Libvirt URI</b><br/><pre>' . $libvirturi . '</pre></li>';
 }
 if (!is_null($spiceuri)) {
-	echo '<li><b>SPICE URI</b><br/><pre>' . $spiceuri . '</pre></li>';
+	printf('<li><b>SPICE URI</b><br/><pre><a href="%1$s" target="_blank">%1$s</a></pre></li>', $spiceuri);
 }
 if (!is_null($startxml)) {
 	echo '<li><b>Start XML</b><br/><div style="overflow: auto;"><pre>' . print_r(htmlspecialchars($startxml), true) . '</pre></div></li>';
