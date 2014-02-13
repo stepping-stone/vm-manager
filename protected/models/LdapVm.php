@@ -67,6 +67,7 @@ class LdapVm extends CLdapRecord {
 			'backup' => array(self::HAS_ONE, 'dn', 'LdapVmBackup', '$model->getDn()', array('ou' => 'backup')),
 			'settings' => array(self::HAS_ONE, 'dn', 'LdapVmConfigurationSettings', '$model->getDn()', array('ou' => 'settings')),
 			'operatingsystem' => array(self::HAS_ONE, 'dn', 'LdapVmOperatingSystem', '$model->getDn()', array('ou' => 'operating system')),
+			'softwarestack' => array(self::HAS_ONE, 'dn', 'LdapVmSoftwareStack', '$model->getDn()', array('ou' => 'software stack')),
 		);
 	}
 
