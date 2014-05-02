@@ -895,15 +895,25 @@ EOS;
 									$templates = LdapVmFromTemplate::model()->findAll(array('attr' => array('sstVirtualMachineType' => 'template', 'sstThinProvisioningVirtualMachine' => $vm->sstVirtualMachine)));
 									if (0 < count($templates)) {
 										$answer['statustxt'] = ', streaming';
-										$cur = -1;
-										$end = -1;
+										$cur = $end = 0;
 										$disks = $vm->devices->getDisksByDevice('disk');
 										foreach($disks as $disk) {
 											$info = $libvirt->checkBlockJob($vm->node->getLibvirtUri(), $vm->sstVirtualMachine, $disk->sstDisk);
-											if (true !== $info) {
-												$cur += $info['cur'];
-												$end += $info['end'];
+
+											// reset cur/invalidate end if getting the block job info failed completely
+											if (false === $info) {
+												$cur = 0;
+												$end = -1;
+												break;
 											}
+
+											// if no block job is available, assume that it finished. TODO: check disks for backing file
+											if (true === $info) {
+												continue;
+											}
+
+											$cur += $info['cur'];
+											$end += $info['end'];
 										} 
 										$answer['progress'] = round($cur / $end * 100, 1);
 										if ($cur === $end) {
