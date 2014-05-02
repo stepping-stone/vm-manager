@@ -1706,21 +1706,29 @@ EOS;
 								$prov = $vm->sstThinProvisioningVirtualMachine;
 								foreach($vm->sstThinProvisioningVirtualMachine as $uuid) {
 									$othervm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $uuid)));
-									if (!is_null($othervm)) {
-										$finished = true;
-										$disks = $vm->devices->getDisksByDevice('disk');
-										foreach($disks as $disk) {
-											$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, $disk->sstDisk);
-											if (true !== $info) {
-												$finished = false;
-												break;
-											}
-										}
-										if ($finished) {
-											unset($prov[array_search($uuid, $prov)]);
-										}
+
+									// Referenced VM was removed, unlink and continue
+									if (is_null($othervm)) {
+										Yii::log("VM {$uuid} got removed before streaming was registered as finished", 'info', 'vmTemplateController');
+										unset($prov[array_search($uuid, $prov)]);
+										continue;
 									}
-									else {
+
+									$finished = true;
+									$disks = $vm->devices->getDisksByDevice('disk');
+									foreach($disks as $disk) {
+										Yii::trace("Checking for blockjob on {$disk->sstDisk} for VM {$uuid}", 'vmTemplateController');
+										$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, $disk->sstDisk);
+										// streaming is not done if either an error is returned (FALSE) or job is still running (array)
+										if (true !== $info) {
+											Yii::trace("Disk {$disk->sstDisk} is streaming for VM {$uuid}", 'vmTemplateController');
+											$finished = false;
+											break;
+										}
+										// TODO: check disks for backing file
+									}
+									if ($finished) {
+										Yii::trace("No disk was streaming for VM {$uuid}", 'vmTemplateController');
 										unset($prov[array_search($uuid, $prov)]);
 									}
 								}
