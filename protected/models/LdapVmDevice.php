@@ -87,7 +87,7 @@ class LdapVmDevice extends CLdapRecord {
 		}
 		foreach($disks as $disk) {
 			if ($device == $disk->sstDevice) {
-				$reval[] = $disk;
+				$retval[] = $disk;
 			}
 		}
 		return $retval;
