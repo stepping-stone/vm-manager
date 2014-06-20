@@ -162,15 +162,25 @@ function refreshNextVm()
 						state = 'red';
 						break;
 					case 'running':
-						buttons = {'vm_start': false, 'vm_restart': true, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_login': true};
+						switch(data[row['uuid']]['substatus']) {
+							case 'backing up':	buttons = {'vm_start': false, 'vm_restart': true, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_login': true}; break;
+							case 'streaming':	buttons = {'vm_start': false, 'vm_restart': true, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_login': true}; break;
+							case 'migrating':	buttons = {'vm_start': false, 'vm_restart': true, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_login': true}; break;
+							case '': 			buttons = {'vm_start': false, 'vm_restart': true, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_login': true}; break;
+						}
 						state = 'green';
 						break;
-					case 'migrating':
-						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_login': false};
-						state = 'yellow';
-						break;
+// 					case 'migrating':
+// 						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_login': false};
+// 						state = 'yellow';
+// 						break;
 					case 'stopped':
-						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false};
+						switch(data[row['uuid']]['substatus']) {
+							case 'backing up':	buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false}; break;
+							case 'streaming':	buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false}; break;
+							case 'migrating':	buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': true, 'vm_del': false, 'vm_login': false}; break;
+							case '': 			buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false}; break;
+						}
 						state = 'red';
 						break;
 					case 'shutdown':
@@ -192,10 +202,14 @@ function refreshNextVm()
 						$('#{$gridid}_grid').delRowData(id);
 						//return;
 						break;
+					default: status = '??' + status;
 				}
-				status += data[row['uuid']]['statustxt'];
+				status = data[row['uuid']]['_t_status']
+				if ('' != data[row['uuid']]['substatus']) {
+					status += ', ' + data[row['uuid']]['_t_substatus'];
+				}
 				if (data[row['uuid']]['progress'] != undefined) {
-					status += ' ' + data[row['uuid']]['progress'] + "%";
+					status += ' [' + data[row['uuid']]['progress'] + "%]";
 				}
 
 				refreshVmButtons(id, buttons);

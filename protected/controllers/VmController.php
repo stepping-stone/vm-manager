@@ -854,7 +854,7 @@ EOS;
 				$vm = CLdapRecord::model('LdapVm')->findByDn($dn);
 				//echo '<pre>' . print_r($vm, true) . '</pre>';
 				if (!is_null($vm)) {
-					$answer = array(/* 'type' => $vm->sstVirtualMachineType, 'subtype' => $vm->sstVirtualMachineSubType,*/ 'node' => $vm->sstNode, 'statustxt' => '');
+					$answer = array(/* 'type' => $vm->sstVirtualMachineType, 'subtype' => $vm->sstVirtualMachineSubType,*/ 'node' => $vm->sstNode, 'substatus' => '');
 					$checkStatus = true;
 					if ('dynamic' == $vm->sstVirtualMachineType) {
 						switch($vm->sstVirtualMachineSubType) {
@@ -862,39 +862,68 @@ EOS;
 								$answer['status'] = 'golden';
 								$answer['node'] = '';
 								if ($vm->sstVirtualMachine == $vm->vmpool->sstActiveGoldenImage) {
-									$answer['statustxt'] = ', active';
+									$answer['substatus'] = 'active';
 									$answer['status'] = 'golden_active';
 								}
 								$checkStatus = false;
 								break;
 							case 'System-Preparation':
-								$answer['statustxt'] = ', sys-prep';
+								$answer['substatus'] = 'sys-prep';
 								break;
 							default:
 								if (0 == count($vm->people)) {
-									$answer['statustxt'] = ', free';
+									$answer['substatus'] = 'free';
 								}
 								else {
 									$uid = $vm->people[0]->ou;
 									$user = LdapUser::model()->findByAttributes(array('attr'=>array('uid' => $uid)));
-									$answer['statustxt'] = ', ' . $user->cn;
+									$answer['substatus'] = $user->cn;
 								}
 								break;
 						}
 						$data[$vm->sstVirtualMachine] = $answer;
 					}
 					if ($checkStatus) {
+						//
+						// check for backup
+						if (!is_null($vm->backup)) {
+							foreach($vm->backup->backups as $backup) {
+								if ('finished' !== $backup->sstProvisioningMode) {
+									if (!isset($backup->sstProvisioningReturnValue) || 0 == $backup->sstProvisioningReturnValue) {
+										$answer['substatus'] = 'backing up';
+										break;
+									}
+								}
+							}
+						}
+						
+						//
+						// check for migrating
+						if (isset($vm->sstMigrationNode)) {
+							$answer['substatus'] = 'migrating';
+						}
+						
 						$libvirt = CPhpLibvirt::getInstance();
 						if ($status = $libvirt->getVmStatus(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine))) {
 							if ($status['active']) {
 								$memory = $this->getHumanSize($status['memory'] * 1024);
 								$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
 								//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'cpu' => $status['cpuTime'], 'cpuOrig' => $status['cpuTimeOrig']);
-								$state = 'running';
+								switch($status['state']) {
+									case CPhpLibvirt::$VIR_DOMAIN_RUNNING:		$state = 'running'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_BLOCKED:		$state = 'blocked'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_PAUSED:		$state = 'pauses'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_SHUTDOWN:		$state = 'shutdown'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_SHUTOFF:		$state = 'stopped'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_CRASHED:		$state = 'crashed'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_PMSUSPENDED:	$state = 'suspended'; break;
+								}
 								if ('persistent' === $vm->sstVirtualMachineType) {
+									//
+									// check for streaming
 									$templates = LdapVmFromTemplate::model()->findAll(array('attr' => array('sstVirtualMachineType' => 'template', 'sstThinProvisioningVirtualMachine' => $vm->sstVirtualMachine)));
 									if (0 < count($templates)) {
-										$answer['statustxt'] = ', streaming';
+										$answer['substatus'] = 'streaming';
 										$cur = $end = 0;
 										$disks = $vm->devices->getDisksByDevice('disk');
 										foreach($disks as $disk) {
@@ -929,15 +958,6 @@ EOS;
 										}
 									}
 								}
-								switch($status['state']) {
-									case CPhpLibvirt::$VIR_DOMAIN_RUNNING: $answer['statustxt'] = ', ' . 'running'; break;
-									case CPhpLibvirt::$VIR_DOMAIN_BLOCKED: $answer['statustxt'] = ', ' . 'blocked'; break;
-									case CPhpLibvirt::$VIR_DOMAIN_PAUSED: $answer['statustxt'] = ', ' . 'paused'; break;
-									case CPhpLibvirt::$VIR_DOMAIN_SHUTDOWN: $answer['statustxt'] = ', ' . 'shutdown'; break;
-									case CPhpLibvirt::$VIR_DOMAIN_SHUTOFF: $answer['statustxt'] = ', ' . 'shutoff'; break;
-									case CPhpLibvirt::$VIR_DOMAIN_CRASHED: $answer['statustxt'] = ', ' . 'crashed'; break;
-									case CPhpLibvirt::$VIR_DOMAIN_PMSUSPENDED: $answer['statustxt'] = ', ' . 'suspended'; break;
-								}
 								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => $state, 'mem' => $memory . ' / ' . $maxmemory, 'spice' => $vm->getSpiceUri()));
 							}
 							else if ('dynamic' == $vm->sstVirtualMachineType && ('Desktop' == $vm->sstVirtualMachineSubType || 'Server' == $vm->sstVirtualMachineSubType)) {
@@ -959,7 +979,8 @@ EOS;
 //								$vm->delete(true);
 							}
 							else {
-								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
+								$state = 'stopped';
+								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => $state, 'spice' => $vm->getSpiceUri()));
 							}
 						}
 						else {
@@ -972,6 +993,8 @@ EOS;
 				}
 			}
 		}
+		$data[$vm->sstVirtualMachine]['_t_status'] =  Yii::t('vmstatus', $state);
+		$data[$vm->sstVirtualMachine]['_t_substatus'] =  Yii::t('vmstatus', $answer['substatus']);
 		$this->sendJsonAnswer($data);
 	}
 
