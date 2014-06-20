@@ -589,7 +589,7 @@ class VmTemplateController extends Controller
 				Yii::app()->end();
 			}
 			$usedNode = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $finishForm['node']))));
-			if (is_null($storagepool)) {
+			if (is_null($usedNode)) {
 				$this->sendJsonAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'Node not found!')));
 				Yii::app()->end();
 			}
