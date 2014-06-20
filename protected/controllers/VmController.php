@@ -526,10 +526,33 @@ EOS;
 		if ('Golden-Image' !== $vm->sstVirtualMachineSubType) {
 			echo <<< EOS
     <tr>
-      <td style="text-align: right;vertical-align: top;"><b>IP Adress:</b></td>
-      <td>$ipText</td>
-    </tr>
+      <td style="text-align: right;vertical-align: top;" rowspan="2"><b>IP Adress:</b></td>
+      <td style="vertical-align: top;" rowspan="2">$ipText</td>
+	  <td style="text-align: right;vertical-align: top;"><b>OS:</b></td>
+      <td style="vertical-align: top;">
 EOS;
+			if (!is_null($vm->operatingsystem)) {
+				echo $vm->operatingsystem->getCompleteName();
+
+			}
+			else {
+				echo 'undefined';
+			}
+			echo <<< EOS
+		</td>
+	</tr>
+	<tr>
+      <td style="text-align: right;vertical-align: top;"><b>Software Stack:</b></td>
+      <td style="vertical-align: top;">
+EOS;
+			if (!is_null($vm->softwarestack)) {
+				echo $vm->softwarestack->sstDisplayName . '<br/>' . $vm->softwarestack->environment->sstDisplayName;
+
+			}
+			else {
+				echo 'undefined';
+			}
+			echo '</td>';
 		}
 		echo '</tbody></table>';
 		if (!is_null($vm->backup)) {

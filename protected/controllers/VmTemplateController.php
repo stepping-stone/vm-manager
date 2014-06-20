@@ -1222,23 +1222,31 @@ EOS;
 			echo <<< EOS
       <td style="text-align: right;vertical-align: top;" rowspan="2"><b>IP Adress:</b></td>
       <td style="vertical-align: top;" rowspan="2">$ipText</td>
+	  <td style="text-align: right;vertical-align: top;"><b>OS:</b></td>
+      <td style="vertical-align: top;">
 EOS;
 			if (!is_null($vm->operatingsystem)) {
-				echo <<< EOS
-      <td style="text-align: right;vertical-align: top;"><b>OS:</b></td>
-      <td style="vertical-align: top;">{$vm->operatingsystem->getCompleteName()}</td>
-EOS;
+				echo $vm->operatingsystem->getCompleteName();
+
 			}
-		}
-		echo '</tr><tr>';
-		if ('Golden-Image' !== $vm->sstVirtualMachineSubType) {
-			echo '<td></td><td></td>';
-			if (!is_null($vm->softwarestack)) {
-				echo <<< EOS
+			else {
+				echo 'undefined';
+			}
+			echo <<< EOS
+		</td>
+	</tr>
+	<tr>
       <td style="text-align: right;vertical-align: top;"><b>Software Stack:</b></td>
-      <td>{$vm->softwarestack->sstDisplayName}<br/>{$vm->softwarestack->environment->sstDisplayName}</td>
+      <td style="vertical-align: top;">
 EOS;
+			if (!is_null($vm->softwarestack)) {
+				echo $vm->softwarestack->sstDisplayName . '<br/>' . $vm->softwarestack->environment->sstDisplayName;
+
 			}
+			else {
+				echo 'undefined';
+			}
+			echo '</td>';
 		}
 		echo '</tr></tbody></table>';
 		if (!is_null($vm->backup)) {
