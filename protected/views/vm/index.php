@@ -219,7 +219,7 @@ function refreshNextVm()
 					if ('' != row['user']) {
 						name += '; user: ' + row['user'];
 					}
-					name += '">' + row['name'] + '</a>';
+					name += '">' + data[row['uuid']]['name'] + '</a>';
 				}
 				else
 				{
@@ -227,7 +227,7 @@ function refreshNextVm()
 					if ('' != row['user']) {
 						name += '; user: ' + row['user'];
 					}
-					name += '">' + row['name'] + '</span>';
+					name += '">' + data[row['uuid']]['name'] + '</span>';
 				}
 				stateimg = 'vm_status_' + state;
 				if ('' != data[row['uuid']]['node']) {
