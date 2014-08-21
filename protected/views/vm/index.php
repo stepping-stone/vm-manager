@@ -1108,6 +1108,13 @@ EOS
 			}
 		}
 EOS
+,
+		'onPaging' =>  'js:' . <<<EOS
+		function()
+		{
+			buttonState = [];
+		}
+EOS
 	),
 	'theme' => 'osbd',
 	'themeUrl' => $this->cssBase . '/jquery',
