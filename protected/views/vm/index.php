@@ -992,12 +992,12 @@ $this->widget('ext.zii.CJqGrid', array(
 			array('name'=>'user','index'=>'user','hidden'=>true,'editable'=>false),
 			array('name'=>'name','index'=>'sstDisplayName','width'=>'70','editable'=>false),
 			array('name'=>'status','index'=>'status', 'sortable' =>false, 'search' =>false, 'editable'=>false),
-			array('name'=>'statusact','index'=>'statusact','width' => 70, 'fixed' => true, 'sortable' =>false, 'search' =>false, 'editable'=>false),
+			array('name'=>'statusact','index'=>'statusact','width' => 76, 'fixed' => true, 'sortable' =>false, 'search' =>false, 'editable'=>false),
 			array('name'=>'mem','index'=>'mem','width' => '100', 'fixed' => true, 'align'=>'center', 'sortable' =>false, 'search' => false, 'editable'=>false),
 			array('name'=>'cpu','index'=>'cpu','width' => '104', 'fixed' => true, 'align'=>'center', 'sortable' =>false, 'search' => false, 'editable'=>false, 'hidden'=>true),
 			array('name'=>'node','index'=>'sstNode','editable'=>false),
 			array('name'=>'nodename','index'=>'nodename','hidden'=>true,'editable'=>false),
-			array ('name' => 'act','index' => 'act','width' => 19 * 5, 'fixed' => true, 'sortable' => false, 'search' =>  false, 'editable'=>false)
+			array ('name' => 'act','index' => 'act','width' => 95, 'fixed' => true, 'sortable' => false, 'search' =>  false, 'editable'=>false)
 		),
 		//'toolbar' => array(true, "top"),
 		//'caption'=>'VMs',
