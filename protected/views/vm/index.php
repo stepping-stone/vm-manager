@@ -1106,6 +1106,10 @@ EOS
 					});
 				});
 			}
+			else {
+				clearTimeout(timeoutid);
+				setTimeout(refreshVms, 100);
+			}
 		}
 EOS
 ,
