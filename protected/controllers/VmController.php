@@ -128,9 +128,6 @@ class VmController extends Controller
 		if (!is_null($vmpool)) {
 			Yii::app()->getSession()->add('vm.index.' . $vmtype . '.vmpool', $vmpool);
 		}
-		else {
-			$vmpool = '???';
-		}
 		$this->render('index', array(
 			'vmtype' => $vmtype,
 			'vmpools' => $this->createDropdownFromLdapRecords($vmpools, 'sstVirtualMachinePool', 'sstDisplayName'),
