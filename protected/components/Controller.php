@@ -505,7 +505,7 @@ class Controller extends CController
 		return $retval;
 	}
 
-	public function getNextUid() {
+	public function getNextUidOld() {
 		$retval = null;  // means that someone else want's to get a Uid at the moment
 		$server = CLdapServer::getInstance();
 		$dn = 'cn=nextfreeuid,ou=administration';
@@ -527,5 +527,10 @@ class Controller extends CController
 			$server->modify_del($dn, $data);
 		}
 		return $retval;
+	}
+	
+	public function getNextUid() {
+		$server = CLdapServer::getInstance();
+		return $server->getNextFreeUid();
 	}
 }

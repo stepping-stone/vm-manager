@@ -563,6 +563,33 @@ class CLdapServer {
 		ldap_unbind($this->_connection);
 	}
 
+	public function getConnection() {
+		return $this->_connection;
+	}
+	
+	public function getNextFreeUid() {
+		$dn = 'cn=nextfreeuid,ou=administration';
+		$result = $this->findByDn($dn);
+		if (1 != $result['count']) {
+			throw new CLdapException(Yii::t('osbd', 'Error reading "nextfreeuid"'));
+		}
+		$dn = $result[0]['dn'];
+		$uid = (int) $result[0]['uid'][0];
+
+		$assertion_string = '(uid=' . $uid . ')';
+		$control = ldap_control_assertion($this->_connection, $assertion_string);
+		
+		$data = array('uid' => $uid + 1);
+		$retval = ldap_modify($this->_connection, $dn, $data, $control);
+		if (!$retval) {
+			throw new CLdapException(Yii::t('osbd', 'Error modifing "nextfreeuid": '. ldap_errno($this->_connection) . ': ' . ldap_error($this->_connection)));
+		}
+		else {
+			return $uid;
+		}
+		return null;
+	}
+	
 	/**
 	 * Static method which returns the singleton instance of this class.
 	 *
