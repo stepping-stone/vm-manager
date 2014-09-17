@@ -74,9 +74,10 @@ class UserController extends Controller
 	{
 		return array(
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-		        	'actions'=>array('index', 'create', 'update', 'delete',
+		        'actions'=>array('index', 'create', 'update', 'delete',
 					'updatePopup',
-					'getUser', 'getVMsGui', 'getRoles', 'saveVMsAssign'),
+					'getUser', 'getVMsGui', 'getRoles', 'saveVMsAssign',
+		        	'getCustomers', 'getPeople'),
 				'users'=>array('@'),
 				'expression'=>'Yii::app()->user->isAdmin'
 			),
@@ -505,6 +506,29 @@ class UserController extends Controller
 				}
 			}
 		}
+	}
+
+	public function actionGetCustomers($uid) {
+		$this->disableWebLogRoutes();
+		$data = array();
+		$criteria = array('attr'=>array('sstIsActive' => 'TRUE', 'sstBelongsToResellerUID' => $uid));
+		$customers = LdapCustomer::model()->findAll($criteria);
+		foreach($customers as $customer) {
+			$data[] = array('uid' => $customer->uid, 'name' => $customer->o);
+		}
+		$this->sendJsonAnswer($data);
+	}
+	
+	
+	public function actionGetPeople($uid) {
+		$this->disableWebLogRoutes();
+		$data = array();
+		$criteria = array('attr'=>array('sstIsActive' => 'TRUE', 'sstBelongsToCustomerUID' => $uid));
+		$people = LdapPerson::model()->findAll($criteria);
+		foreach($people as $person) {
+			$data[] = array('uid' => $person->uid, 'name' => $person->name);
+		}
+		$this->sendJsonAnswer($data);
 	}
 
 	/* Private functions */
