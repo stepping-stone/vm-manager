@@ -17,7 +17,7 @@
 return array (
   'running' => 'Running',
   'blocked' => 'Blocked',
-  'pauses' => 'Pauses',
+  'paused' => 'Paused',
   'shutdown' => 'Shutdown',
   'stopped' => 'Stopped',
   'crashed' => 'Crashed',
@@ -29,4 +29,5 @@ return array (
   'free' => 'Frei',
   'backing up' => 'sichert',
   'migrating' => 'migriert',
+  'streaming' => 'streaming',
 );

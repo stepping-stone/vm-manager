@@ -935,7 +935,7 @@ EOS;
 								switch($status['state']) {
 									case CPhpLibvirt::$VIR_DOMAIN_RUNNING:		$state = 'running'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_BLOCKED:		$state = 'blocked'; break;
-									case CPhpLibvirt::$VIR_DOMAIN_PAUSED:		$state = 'pauses'; break;
+									case CPhpLibvirt::$VIR_DOMAIN_PAUSED:		$state = 'paused'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_SHUTDOWN:		$state = 'shutdown'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_SHUTOFF:		$state = 'stopped'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_CRASHED:		$state = 'crashed'; break;
