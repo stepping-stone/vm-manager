@@ -2,19 +2,14 @@ body
 {
 	margin: 0;
 	padding: 0;
-	color: #555;
+	color: #333333;
 	font: normal 10pt Arial,Helvetica,sans-serif;
-	background: #EFEFEF;
 }
 
 #page
 {
 	margin-top: 5px;
 	margin-bottom: 5px;
-	background: white url(bg.png) repeat-y left top;
-	border-right: 1px solid #AFAFAF;
-	border-bottom: 1px solid #AFAFAF;
-	border-left: 1px solid #AFAFAF;
 	padding: 0 20px;
 }
 
@@ -26,21 +21,20 @@ body
 
 #content
 {
-    padding: 0 20px 20px 20px;
+	padding: 0 0 0 0;
 }
 
 div.sidebar
 {
-	padding: 5px 20px 0 0;
+	padding: 1px 0 0 0;
 }
 
 #footer
 {
-	padding: 10px 10px 0 10px;
-	margin: 10px 20px;
+	padding: 5px 0 0 0;
+	margin: 10px 0;
 	font-size: 0.8em;
 	text-align: center;
-	border-top: 1px solid #AFAFAF;
 }
 
 #logo
@@ -61,7 +55,7 @@ div.sidebar
 
 #mainmenu
 {
-	background:white url(menubg.png) repeat-x left top;
+	background-color: #63B8E8;
 }
 
 #mainmenu ul
@@ -77,7 +71,7 @@ div.sidebar
 
 #mainmenu ul li a
 {
-	color:#777777;
+	color: #FFFFFF;
 	background-color:transparent;
 	font-size:12px;
 	font-weight:bold;
@@ -172,8 +166,12 @@ div.search-form
 .portlet-decoration
 {
 	padding: 3px 8px;
-	background: url(menubg.png) repeat-x top left;
-	border-left: 5px solid #E7DFDA;
+        background-color: #63B8E8;
+}
+
+.portlet-decoration:hover
+{
+        background-color: #DFAC14;
 }
 
 .portlet-title
@@ -182,7 +180,7 @@ div.search-form
 	font-weight: bold;
 	padding: 0;
 	margin: 0;
-	color: #000000;
+	color: #FFFFFF;
 	height: 15px;
 }
 
@@ -190,8 +188,6 @@ div.search-form
 {
 	font-size:0.9em;
 	margin: 0;
-	padding: 5px 8px;
-	background:#faf9f4;
 }
 
 .portlet-content ul
@@ -205,7 +201,7 @@ div.search-form
 
 .portlet-content li
 {
-	padding: 2px 0 4px 0px;
+	padding: 1px 0 4px 0px; 
 }
 
 .submenu
@@ -217,61 +213,78 @@ div.search-form
 
 .submenu li
 {
-	padding-bottom: 2px;
+	padding-bottom: 0px;
 }
 
 .submenu li a
 {
 	font: 12px Arial;
-	color: #777777;
+	color: #63B8E8;
 	display: block;
 	padding: 2px 0 2px 8px;
 	line-height: 15px;
 	text-decoration: none;
+	border-bottom: 1px solid #63B8E8;
 }
 
 .submenu li a:visited
 {
-	color: #777777;
+	color: #63B8E8;
 }
 
-.submenu li a:hover, .submenu li.active > a
+.submenu li a:hover
 {
-	color: #777777;
-	background: #E7DFDA;
+	color: #FFFFFF;
+}
+.submenu a:hover
+{
+	color: #FFFFFF;
+	background: #DFAC14;
+	border-bottom: 1px solid #DFAC14;
+}
+
+.submenu li.active a
+{
+	color: #63B8E8;
+	font-weight: bold;
 }
 
 .submenu li ul
 {
 	list-style-type: none;
-	margin: 0 0 0 20px;
+	margin: 0 0 0 0px;
 	padding: 0;
 }
 
 .submenu li ul li
 {
-	padding-bottom: 2px;
+	padding-bottom: 0px;
 }
 
 .submenu li ul li a, .submenu li ul li span
 {
 	font: 12px Arial;
-	color: #777777;
+	color: #63B8E8; 
 	display: block;
-	padding: 2px 0 2px 8px;
+	padding: 1px 0 1px 18px;
 	line-height: 15px;
 	text-decoration: none;
 }
 
 .submenu li ul li a:visited
 {
-	color: #777777;
+	color: #63B8E8;
 }
 
 .submenu li ul li a:hover, .submenu li ul li.active a, .submenu li ul li span
 {
-	color: #777777;
-	background: #E7DFDA;
+	color: #FFFFFF;
+}
+
+.submenu li ul li.active a
+{
+	color: #63B8E8;
+	font-weight: bold;
 }
 
 .column .step
@@ -369,7 +382,7 @@ tr.odd {
 	top:0px; /* controls vertical position */
 	right:-20px; /* value = - border-left-width - border-right-width */
 	bottom:auto;
-    left:auto;
+	left:auto;
 	border-width:15px 0 15px 20px;
 	border-style:solid;
 	border-color:transparent #F4EDE3;
@@ -388,7 +401,7 @@ tr.odd {
 	top:6px; /* value = (:before top) + (:before border-top) - (:after border-top) */
 	right:-15px; /* value = - border-left-width - border-right-width */
 	bottom:auto;
-    left:auto;
+	left:auto;
 	border-width:9px 0 9px 15px;
 	border-style:solid;
 	border-color:transparent #fff;
