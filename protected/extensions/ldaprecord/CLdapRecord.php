@@ -63,6 +63,7 @@ abstract class CLdapRecord extends CModel {
 	protected $_filter = array();				// possible filter; used by reading
 	protected $_dnAttributes = array();			// attributes used to create DN; order important!
 	protected $_objectClasses = array();		// allowed object classes
+	protected $_objectClassesChanged = false;	// 
 	private $_md;								// meta data
 	protected $_attributes = null;				// array of actual attributes
 	protected $_related = array();				// attribute name => related objects
@@ -795,12 +796,12 @@ abstract class CLdapRecord extends CModel {
 		Yii::log('update: ' . $this->_readDn . ' == ' . $this->createDn(), 'profile', 'ext.ldaprecord.CLdapRecord');
 		$server = CLdapServer::getInstance();
 		if ($this->_readDn == $this->createDn()) {
-			$retval = $server->modify($this->_readDn, $this->createEntry(true));
+			$retval = $server->modify($this->_readDn, $this->createEntry(true, $attributes));
 		}
 		else {
 			$retval = $server->rename($this->_readDn, $this->createDnBase());
 			if ($retval) {
-				$retval = $server->modify($this->_dn, $this->createEntry(true));
+				$retval = $server->modify($this->_dn, $this->createEntry(true, $attributes));
 			}
 		}
 		return $retval;
@@ -859,8 +860,27 @@ abstract class CLdapRecord extends CModel {
 	public function hasObjectClass($objClassName) {
 		return in_array($objClassName, $this->_objectClasses);
 	}
+	
+	public function addObjectClass($objClassName) {
+		if (!$this->hasObjectClass($objClassName)) {
+			$schema = CLdapServer::getInstance()->getSchema();
+			$objClass = $schema->getObjectClass($objClassName);
+			if (null != $objClass) {
+				$this->_attributes = array_merge($this->_attributes, $objClass->getAttributes());
+			}
+			else {
+				throw new CLdapException(Yii::t('LdapComponent.record', 'Unknown objectClass "{class}"!', array('{class}' => $objClassName)));
+			}
+			if ('labeledURIObject' == $objClassName) {
+				$this->_attributes['member'] = array('mandatory' => false, 'type' => 'array', 'value' => null, 'origName' => 'member');
+			}
+			$this->_objectClasses[] = $objClassName;
+		}
+		//Yii::log("addObjectClass: attrs: " . print_r($this->attributeNames(), true), 'profile', 'ext.ldaprecord.CLdapRecord');
+		$this->_objectClassesChanged = true;
+	}
 
-	public function removeAttributesByObjectClass($objClassName) {
+	public function removeAttributesByObjectClass($objClassName, $isChanged=false) {
 		if ($this->hasObjectClass($objClassName)) {
 			$schema = CLdapServer::getInstance()->getSchema();
 			$objClass = $schema->getObjectClass($objClassName);
@@ -869,6 +889,7 @@ abstract class CLdapRecord extends CModel {
 					unset($this->_attributes[$name]);
 				}
 				unset($this->_objectClasses[array_search($objClassName,$this->_objectClasses)]);
+				$this->_objectClassesChanged = $isChanged;
 			}
 		}
 		else {
@@ -910,11 +931,21 @@ abstract class CLdapRecord extends CModel {
 		return $dn;
 	}
 
-	private function createEntry($isModify) {
+	private function createEntry($isModify, $attributes=null) {
 		$entry = array();
+		if (!is_null($attributes)) {
+			array_walk($attributes, function(&$item, $key) {
+				$item = strtolower($item);
+			});
+		}
+		Yii::log('createEntry: ' . var_export($isModify, true) . ', ' . print_r($attributes, true), 'profile', 'ext.ldaprecord.CLdapRecord');
 		foreach($this->_attributes as $key => $value) {
-			if ('member' == $key) continue;
-			if ('dn' !== $key && !is_null($value['value']) && (!isset($value['readOnly']) || !$value['readOnly'])) {
+			//Yii::log('createEntry: ' . $key, 'profile', 'ext.ldaprecord.CLdapRecord');
+			//Yii::log('createEntry: ' . var_export(is_null($value['value']), true) . ', ' . var_export(!isset($value['readOnly']) || !$value['readOnly'], true) . ', ' . var_export(in_array($key, $attributes), true), 'profile', 'ext.ldaprecord.CLdapRecord');
+			if ('member' === $key || 'dn' === $key) continue;
+			if (!is_null($value['value']) && (!isset($value['readOnly']) || !$value['readOnly']) &&
+				(is_null($attributes) || in_array($key, $attributes))) {
+				//echo '<pre>' . $key . ' ' . var_export($value['value'], true) . '</pre>';
 				if (is_array($value['value'])) {
 					if ('assozarray' == $value['type']) {
 						$retval = array();
@@ -933,7 +964,8 @@ abstract class CLdapRecord extends CModel {
 				}
 			}
 		}
-		if (!$isModify) {
+		if (!$isModify || $this->_objectClassesChanged) {
+			Yii::log('createEntry: objectClasses', 'profile', 'ext.ldaprecord.CLdapRecord');
 			if (0 != count($this->_objectClasses)) {
 				$entry['objectclass'] = array();
 				foreach($this->_objectClasses as $class) {
