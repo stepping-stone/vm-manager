@@ -106,7 +106,8 @@ class VmTemplateController extends Controller
 					'getDefaults', 'getVmInfo', 'getVmTemplates', 'refreshVMs', 'getNodeGui',
 					'saveVm', 'startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm', 'toogleBoot',
 					'getCheckCopyGui', 'checkCopy', 'getDynData', 'getStaticPoolGui', 'getDynamicPoolGui', 'restoreVm', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction',
-					'setMachineMode', 'getPersistentCreationData'),
+					'setMachineMode', 'getPersistentCreationData',
+					'setRelationship'),
 		        'users'=>array('@'),
 				'expression'=>'Yii::app()->user->isAdmin'
 			),
@@ -1147,6 +1148,20 @@ class VmTemplateController extends Controller
 		$loading = $this->getImageBase() . '/loading.gif';
 
 		$machinemodeUrl = $this->createUrl('setMachineMode');
+
+		$criteria = array('attr'=>array('sstIsActive' => 'TRUE'));
+		$reseller = LdapReseller::model()->findAll($criteria);
+		$reseller = $this->createDropdownFromLdapRecords($reseller, 'uid', 'o');
+		$resellerselect = CHtml::dropDownList('reseller', $vm->sstBelongsToResellerUID, $reseller, array('id' => 'reseller' . $rowid, 'rowid' => $rowid, 'prompt' => ''));
+		$criteria['attr']['sstBelongsToResellerUID'] = $vm->sstBelongsToResellerUID;
+		$customer = LdapCustomer::model()->findAll($criteria);
+		$customer = $this->createDropdownFromLdapRecords($customer, 'uid', 'o');
+		$customerselect = CHtml::dropDownList('customer', $vm->sstBelongsToCustomerUID, $customer, array('id' => 'customer' . $rowid, 'rowid' => $rowid, 'style' => 'float: left;', 'prompt' => ''));
+		$criteria['attr']['sstBelongsToCustomerUID'] = $vm->sstBelongsToCustomerUID;
+		$person = LdapPerson::model()->findAll($criteria);
+		$person = $this->createDropdownFromLdapRecords($person, 'uid', 'name');
+		$personselect = CHtml::dropDownList('person', $vm->sstBelongsToPersonUID, $person, array('id' => 'person' . $rowid, 'rowid' => $rowid, 'style' => 'float: left;', 'prompt' => ''));
+		
 		/*
 		 * with cpu graph
       <td style="text-align: right"><b>Memory:</b></td>
@@ -1155,17 +1170,45 @@ class VmTemplateController extends Controller
       <td rowspan="3" style="height: 53px;" id="cpu2_$rowid"><img src="{$loading}" alt="" /></td>
 
 		 */
+		
+		$baseurl = Yii::app()->baseUrl;
+		$imagesurl = $baseurl . '/images';
+		
 		echo <<<EOS
     <table style="margin-bottom: 0px; font-size: 90%; width: auto;"><tbody>
     <tr>
-      <td style="text-align: right"><b>Type:</b></td>
-      <td>{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
-      <td style="text-align: right"><b>VM UUID:</b></td>
-      <td>{$vm->sstVirtualMachine}</td>
-      <td rowspan="2" style="padding-left: 30px; vertical-align: top;">
+		<td style="text-align: right; vertical-align: top;"><b>Type:</b></td>
+		<td style="vertical-align: top;">{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
+		<td style="text-align: right; vertical-align: top;"><b>VM:</b></td>
+		<td style="vertical-align: top;" colspan="2">{$vm->sstDisplayName}</td>
+		<td style="vertical-align: top;" colspan="2">{$vm->sstVirtualMachine}</td>
+		</tr>
+    <tr>
+		<td style="text-align: right; vertical-align: top;"><b>Memory:</b></td>
+		<td style="vertical-align: top;">$memory</td>
+		<td style="text-align: right;vertical-align: top;"><b>VM Pool:</b></td>
+		<td style="vertical-align: top;" colspan="2">{$vm->vmpool->sstDisplayName}</td>
+		<td style="vertical-align: top;" colspan="2">{$vm->sstVirtualMachinePool}</td>
+		</tr>
+    <tr>
+		<td style="text-align: right; vertical-align: top;"><b>CPUs:</b></td>
+		<td style="vertical-align: top;">{$vm->sstVCPU}</td>
+EOS;
+		if (is_null($vm->sstThinProvisioningVirtualMachine)) {
+			echo <<< EOS
+		<td style="text-align: right; vertical-align: top;"><b>VM's streaming:</b></td>
+		<td style="vertical-align: top;" colspan="2">
+EOS;
+			echo 'asdf, asdf</td>';
+		}
+		else {
+			echo '<td colspan="3">&nbsp;</td>';
+		}
+		echo <<< EOS
+      <td style="text-align: right; vertical-align: top;">
 EOS;
 		echo CHtml::hiddenField('dn', $dn, array('id' => 'dn_' . $vm->sstVirtualMachine));
-		echo '<b>' . CHtml::label(Yii::t('vmtemplate', 'MachineMode'), 'machinemode') . ':</b><br/>';
+		echo '<b>' . CHtml::label(Yii::t('vmtemplate', 'MachineMode'), 'machinemode') . ':</b></td><td style="vertical-align: top;">';
 		$machinemode = $vm->sstVirtualMachineMode;
 		if (is_null($machinemode)) {
 			$machinemode = 'do not use';
@@ -1193,62 +1236,62 @@ EOS;
       </td>
     </tr>
     <tr>
-      <td style="text-align: right; vertical-align: top;"><b>Memory:</b></td>
-      <td style="vertical-align: top;">$memory</td>
-      <td style="text-align: right;vertical-align: top;"><b>VM Pool:</b></td>
-      <td style="vertical-align: top;">{$vm->vmpool->sstDisplayName}<br/>{$vm->sstVirtualMachinePool}</td>
-    </tr>
-    <tr>
-      <td style="text-align: right"><b>CPUs:</b></td>
-      <td>{$vm->sstVCPU}</td>
-      <td></td><td></td>
-EOS;
-		if (!is_null($vm->sstThinProvisioningVirtualMachine)) {
-			echo <<< EOS
-      <td rowspan="2" style="padding-left: 30px; vertical-align: top;">
-		<b><label>VM's streaming</label></b><br/>
-EOS;
-			foreach($vm->sstThinProvisioningVirtualMachine as $uuid) {
-				$othervm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $uuid)));
-				echo $othervm->sstDisplayName . '<br/>';
-			}
-			echo '</td>';
-		}
-		echo <<< EOS
-    </tr>
-    <tr>
 EOS;
 		if ('Golden-Image' !== $vm->sstVirtualMachineSubType) {
 			echo <<< EOS
-      <td style="text-align: right;vertical-align: top;" rowspan="2"><b>IP Adress:</b></td>
-      <td style="vertical-align: top;" rowspan="2">$ipText</td>
-	  <td style="text-align: right;vertical-align: top;"><b>OS:</b></td>
-      <td style="vertical-align: top;">
+		<td style="text-align: right;vertical-align: top;" rowspan="2"><b>IP Adress:</b></td>
+		<td style="vertical-align: top;" rowspan="2">$ipText</td>
 EOS;
 			if (!is_null($vm->operatingsystem)) {
-				echo $vm->operatingsystem->getCompleteName();
-
-			}
-			else {
-				echo 'undefined';
-			}
-			echo <<< EOS
-		</td>
-	</tr>
-	<tr>
-      <td style="text-align: right;vertical-align: top;"><b>Software Stack:</b></td>
-      <td style="vertical-align: top;">
+				echo <<< EOS
+		<td style="text-align: right;vertical-align: top;"><b>OS:</b></td>
+		<td colspan="2" style="vertical-align: top;">{$vm->operatingsystem->getCompleteName()}</td>
 EOS;
-			if (!is_null($vm->softwarestack)) {
-				echo $vm->softwarestack->sstDisplayName . '<br/>' . $vm->softwarestack->environment->sstDisplayName;
-
 			}
 			else {
-				echo 'undefined';
+				echo '		<td colspan="3">&nbsp;</td>';
 			}
-			echo '</td>';
+
+			echo <<< EOS
+		<td rowspan="3" colspan="2" style="vertical-align: top; padding-bottom: 0;">
+			<form id="assign{$rowid}" rowid="{$rowid}">
+				<table style="width: auto; margin-left: 10px; margin-bottom: 0;">
+				<tr>
+					<td style="text-align: right; vertical-align: top; padding-top: 0;"><b>Reseller:</b></td>
+					<td style="vertical-align: top; padding-top: 0;">$resellerselect</td>
+				</tr>
+				<tr>
+					<td style="text-align: right; vertical-align: top;"><b>Customer:</b></td>
+					<td style="vertical-align: top;"><img id="customer{$rowid}loading" src="{$imagesurl}/loading.gif" style="float: left; display: none;" />$customerselect</td>
+				</tr>
+				<tr>
+					<td style="text-align: right; vertical-align: top;"><b>Person:</b></td>
+					<td style="vertical-align: top;"><img id="person{$rowid}loading" src="{$imagesurl}/loading.gif" style="float: left; display: none;" />$personselect</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td>
+					<input id="assign{$rowid}save" rowid="{$rowid}" type="submit" value="Save" style="display: none;"/>
+					<div id="assign{$rowid}message" style="display: none;"></div>
+					</td>
+				</tr>
+				</table>
+			</form>
+		</td>
+EOS;
+			echo '    </tr><tr>';
+			if (!is_null($vm->softwarestack)) {
+				echo <<< EOS
+		<td style="text-align: right;vertical-align: top;"><b>SW Stack:</b></td>
+		<td style="vertical-align: top;">{$vm->softwarestack->sstDisplayName}
+EOS;
+				if (!is_null($vm->softwarestack->environment)) {
+					echo '<br/>' . $vm->softwarestack->environment->sstDisplayName;
+				}
+				echo '		</td>';
+			}
 		}
-		echo '</tr></tbody></table>';
+		echo '</tr><tr><td colspan="4">&nbsp;</td></tr></tbody></table>';
 		if (!is_null($vm->backup)) {
 			echo <<< EOS
 	<br />
@@ -1352,6 +1395,14 @@ EOS;
 			}
 			echo '</tbody></table>';
 		}
+		echo <<< EOS
+<script type="text/javascript">
+	$("#reseller{$rowid}").change(resellerChange);
+	$("#customer{$rowid}").change(customerChange);
+	$("#person{$rowid}").change(personChange);
+	$("#assign{$rowid}save").click(assignSave);
+</script>
+EOS;
 	}
 
 	public function actionGetCheckCopyGui() {
@@ -2213,5 +2264,80 @@ EOS;
 		$json['domainname'] = $config[0]->sstNetworkDomainName;
 		
 		$this->sendJsonAnswer($json);
+	}
+
+	public function actionSetRelationship($dn, $reseller, $customer, $person=null) {
+		//$this->disableWebLogRoutes();
+		$data = array('error' => 0, 'message' => 'saved');
+		$attrs = array();
+		//$vm = LdapVmFromTemplate::model()->findByDn($dn);
+		$criteria = array('attr' => array(
+			'dn' => $dn,
+			'objectClass' => 'sstRelationship'
+		));
+		$vm = LdapVmFromTemplate::model()->findByAttributes($criteria);
+		if (is_null($vm)) {
+			$vm = LdapVmFromTemplate::model()->findByDn($dn);
+			if (!is_null($vm)) {
+				//$vm->removeAttributesByObjectClass('sstRelationship');
+				// just to also save objectClasses
+				$vm->addObjectClass('sstRelationship');
+			}
+		}
+		if (!is_null($vm)) {
+			$vm->setOverwrite(true);
+			$vm->sstBelongsToResellerUID = $reseller;
+			$attrs[] = 'sstBelongsToResellerUID';
+			$vm->sstBelongsToCustomerUID = $customer;
+			$attrs[] = 'sstBelongsToCustomerUID';
+			if (!is_null($person) && '' !== $person) {
+				$vm->sstBelongsToPersonUID = $person;
+			}
+			else {
+				$vm->sstBelongsToPersonUID = array();
+			}
+			$attrs[] = 'sstBelongsToPersonUID';
+			try {
+				$vm->save(false, $attrs);
+			}
+			catch(CLdapException $e) {
+				$data['error'] = 1;
+				$data['message'] = $e->getMessage();
+			}
+			$vmnet = $vm->dhcp;
+			if (!is_null($vmnet)) {
+// 				echo '<pre>' . print_r($vmnet, true) . '</pre>';
+// 				Yii::app()->end();
+				$attrs = array();
+				$vmnet->setOverwrite(true);
+				$vmnet->sstBelongsToResellerUID = $reseller;
+				$attrs[] = 'sstBelongsToResellerUID';
+				$vmnet->sstBelongsToCustomerUID = $customer;
+				$attrs[] = 'sstBelongsToCustomerUID';
+				if (!is_null($person) && '' !== $person) {
+					$vmnet->sstBelongsToPersonUID = $person;
+				}
+				else {
+					$vmnet->sstBelongsToPersonUID = array();
+				}
+				$attrs[] = 'sstBelongsToPersonUID';
+				try {
+					$vmnet->save(false, $attrs);
+				}
+				catch(CLdapException $e) {
+					$data['error'] = 1;
+					$data['message'] = $e->getMessage();
+				}
+			}
+			else {
+				$data['error'] = 1;
+				$data['message'] = 'VM Network not found!';
+			}
+		}
+		else {
+			$data['error'] = 1;
+			$data['message'] = 'VM not found!';
+		}
+		$this->sendJsonAnswer($data);
 	}
 }

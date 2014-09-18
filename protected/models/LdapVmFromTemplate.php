@@ -40,7 +40,7 @@ class LdapVmFromTemplate extends LdapVm {
 	protected $_branchDn = 'ou=virtual machines,ou=virtualization,ou=services';
 	protected $_filter = array('all' => 'sstVirtualMachine=*');
 	protected $_dnAttributes = array('sstVirtualMachine');
-	protected $_objectClasses = array('sstVirtualizationVirtualMachine', 'sstSpice', 'labeledURIObject', 'top');
+	protected $_objectClasses = array('sstVirtualizationVirtualMachine', 'sstRelationship', 'sstSpice', 'labeledURIObject', 'top');
 
 	public function rules()
 	{

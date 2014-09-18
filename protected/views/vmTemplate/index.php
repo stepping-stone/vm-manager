@@ -56,6 +56,9 @@ $waitforrestoreactionurl = $this->createUrl('vmTemplate/waitForRestoreAction');
 $getrestoreactionurl = $this->createUrl('vmTemplate/getRestoreAction');
 $startrestoreactionurl = $this->createUrl('vmTemplate/startRestoreAction');
 $cancelrestoreactionurl = $this->createUrl('vmTemplate/cancelRestoreAction');
+$getcustomersurl = $this->createUrl('user/getCustomers');
+$getpeopleurl = $this->createUrl('user/getPeople');
+$setrelationshipurl = $this->createUrl('vmTemplate/setRelationship');
 
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);
 
@@ -1142,3 +1145,104 @@ EOS
 <?php
 $this->createWidget('ext.fancybox.EFancyBox');
 ?>
+<script type="text/javascript">
+function resellerChange(event) {
+	var rowid = $(this).attr('rowid');
+	$("#assign" + rowid + 'save').show();
+	$("#assign" + rowid + 'message').html('').hide();
+	var uid = $("#reseller" + rowid).val();
+	$("#customer" + rowid).children().remove();
+	$("#customer" + rowid + 'loading').show();
+	$("#person" + rowid).children().remove().prop('disabled', true);
+	$("#assign" + rowid + 'save').prop('disabled', true);
+	if ('' != uid) {
+		$.ajax({
+			url: "<?php echo $getcustomersurl; ?>",
+			cache: false,
+			data: {uid: uid},
+			success: function(data){
+				if (undefined != data['error']) {
+					if (1 == data['error']) {
+						alert(data['message']);
+						return;
+					}
+				}
+				$("#customer" + rowid + 'loading').hide();
+				$("#customer" + rowid).append('<option value=""></option>');
+				for (i = 0; i < data.length; i++) {
+					var option = $('<option value="' + data[i].uid + '">' + data[i].name + '</option>');
+					$("#customer" + rowid).append(option);
+				}
+			},
+			datatype: "json"
+		});
+	}
+	else {
+		$("#customer" + rowid + 'loading').hide();
+	}
+}
+function customerChange(event) {
+	var rowid = $(this).attr('rowid');
+	$("#assign" + rowid + 'save').show();
+	$("#assign" + rowid + 'message').html('').hide();
+	var uid = $("#customer" + rowid).val();
+	$("#person" + rowid).children().remove();
+	$("#person" + rowid + 'loading').show();
+	$("#assign" + rowid + 'save').prop('disabled', true);
+	if ('' != uid) {
+		$("#assign" + rowid + 'save').prop('disabled', false);
+		$.ajax({
+			url: "<?php echo $getpeopleurl; ?>",
+			cache: false,
+			data: {uid: uid},
+			success: function(data){
+				if (undefined != data['error']) {
+					if (1 == data['error']) {
+						alert(data['message']);
+						return;
+					}
+				}
+				$("#person" + rowid + 'loading').hide();
+				$("#person" + rowid).append('<option value=""></option>');
+				for (i = 0; i < data.length; i++) {
+					var option = $('<option value="' + data[i].uid + '">' + data[i].name + '</option>');
+					$("#person" + rowid).append(option);
+				}
+			},
+			datatype: "json"
+		});
+	}
+	else {
+		$("#person" + rowid + 'loading').hide();
+	}
+}
+function personChange(event) {
+	var rowid = $(this).attr('rowid');
+	$("#assign" + rowid + 'save').show();
+	$("#assign" + rowid + 'message').html('').hide();
+}
+function assignSave(event) {
+	event.preventDefault();
+	event.stopPropagation();
+	var rowid = $(this).attr('rowid');
+	var row = $('#<?php echo $gridid; ?>_grid').getRowData(rowid);
+	var params = 'dn=' + row['dn'] + '&' + $("#assign" + rowid).serialize();
+	console.log(params);
+	$.ajax({
+		url: "<?php echo $setrelationshipurl; ?>",
+		cache: false,
+		data: params,
+		success: function(data){
+			if (undefined != data['error']) {
+				if (1 == data['error']) {
+					alert(data['message']);
+					return;
+				}
+			}
+			$("#assign" + rowid + 'message').html(data['message']).show();
+			$("#assign" + rowid + 'save').hide();
+		},
+		datatype: "json"
+	});
+}
+</script>
