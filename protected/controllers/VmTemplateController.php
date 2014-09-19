@@ -616,6 +616,7 @@ class VmTemplateController extends Controller
 				$vmstack->description = $stack->description;
 				$vmstack->labeledURI = 'ldap:///' . $finishForm['stack'];
 				$vmstack->sstEnvironmentName = $finishForm['env'];
+				$vmstack->sstBusinessLogicRoleName = $stack->sstBusinessLogicRoleName;
 				
 				$vmstack->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
 				$vmstack->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
@@ -2267,7 +2268,7 @@ EOS;
 	}
 
 	public function actionSetRelationship($dn, $reseller, $customer, $person=null) {
-		//$this->disableWebLogRoutes();
+		$this->disableWebLogRoutes();
 		$data = array('error' => 0, 'message' => 'saved');
 		$attrs = array();
 		//$vm = LdapVmFromTemplate::model()->findByDn($dn);
