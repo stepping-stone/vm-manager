@@ -16,5 +16,6 @@
  */
 return array (
   'Error reading "nextfreeuid"' => '',
+  'Error modifing "nextfreeuid": ' => '',
   'Help' => '',
 );

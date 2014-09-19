@@ -444,7 +444,7 @@ class CLdapServer {
 	{
 		//echo "dn: $dn<br/>$newDn<br/>$parent<br/>";
 		Yii::log("move: $dn new: $newDn; parent: $parent", 'profile', 'ext.ldaprecord.CLdapServer');
-		$retval = @ldap_rename($this->getConnection(), $dn, $newDn, $parent, true);
+		$retval = @ldap_rename($this->_connection, $dn, $newDn, $parent, true);
 
 		return true;
 	}
@@ -571,6 +571,7 @@ class CLdapServer {
 		$dn = 'cn=nextfreeuid,ou=administration';
 		$result = $this->findByDn($dn);
 		if (1 != $result['count']) {
+			Yii::log(Yii::t('osbd', 'Error reading "nextfreeuid"'), 'error', 'ext.ldaprecord.CLdapServer');
 			throw new CLdapException(Yii::t('osbd', 'Error reading "nextfreeuid"'));
 		}
 		$dn = $result[0]['dn'];
@@ -582,7 +583,8 @@ class CLdapServer {
 		$data = array('uid' => $uid + 1);
 		$retval = ldap_modify($this->_connection, $dn, $data, $control);
 		if (!$retval) {
-			throw new CLdapException(Yii::t('osbd', 'Error modifing "nextfreeuid": '. ldap_errno($this->_connection) . ': ' . ldap_error($this->_connection)));
+			Yii::log(Yii::t('osbd', 'Error modifing "nextfreeuid": ') . ldap_errno($this->_connection) . ', ' . ldap_error($this->_connection), 'error', 'ext.ldaprecord.CLdapServer');
+			throw new CLdapException(Yii::t('osbd', 'Error modifing "nextfreeuid": ') . ldap_errno($this->_connection) . ', ' . ldap_error($this->_connection));
 		}
 		else {
 			return $uid;

@@ -16,5 +16,6 @@
  */
 return array (
   'Error reading "nextfreeuid"' => 'Fehler beim Lesen von "nextfreeuid"',
+  'Error modifing "nextfreeuid": ' => 'Fehler beim Ändern von "nextfreeuid": ',
   'Help' => 'Hilfe',
 );

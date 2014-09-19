@@ -505,32 +505,13 @@ class Controller extends CController
 		return $retval;
 	}
 
-	public function getNextUidOld() {
-		$retval = null;  // means that someone else want's to get a Uid at the moment
-		$server = CLdapServer::getInstance();
-		$dn = 'cn=nextfreeuid,ou=administration';
-		$result = $server->findByDn($dn);
-		if (1 != $result['count']) {
-			throw new CLdapException(Yii::t('osbd', 'Error reading "nextfreeuid"'));
-		}
-		if (!isset($result[0]['title']))
-		{
-			$data = array('title' => 'locked');
-			$server->modify($dn, $data);
-
-			$retval = (int) $result[0]['uid'][0];
-
-			$data = array('uid' => $retval + 1);
-			$server->modify($dn, $data);
-
-			$data = array('title' => array());
-			$server->modify_del($dn, $data);
-		}
-		return $retval;
-	}
-	
 	public function getNextUid() {
 		$server = CLdapServer::getInstance();
-		return $server->getNextFreeUid();
+		try {
+			return $server->getNextFreeUid();
+		}
+		catch (CLdapException $e) {
+			return null;
+		}
 	}
 }
