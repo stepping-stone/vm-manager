@@ -221,7 +221,7 @@ class CPhpLibvirt {
 	}
 
 	public function getVmStatus($data) {
-		$retval = array('active' => false);
+		$retval = array('active' => false, 'state' => self::$VIR_DOMAIN_NOSTATE);
 		try {
 			$con = $this->getConnection($data['libvirt']);
 			Yii::log('getVmStatus: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
