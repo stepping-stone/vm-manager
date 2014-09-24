@@ -706,6 +706,24 @@ function selectStaticPool(id)
 					$("#finishStack").empty().prop('disabled', true);
 					$("#finishEnv").empty().prop('disabled', true);
 				}			
+				// resellers defined as 'global'
+				resellers = data.resellers;
+				if (null != resellers) {
+					$("#finishReseller").empty().prop('disabled', false).append($('<option value=""></option>'));
+					$.each(resellers, function(key, val) {
+						$("#finishReseller").append($('<option value="' + key + '">' + val.name + '</option>'));
+					});
+					$("#finishReseller").val(data.reseller);
+					$("#finishCustomer").empty().prop('disabled', false).append($('<option value=""></option>'));
+					$.each(resellers[data.reseller].customers, function(key, val) {
+						$("#finishCustomer").append($('<option value="' + key + '">' + val + '</option>'));
+					});
+					$("#finishCustomer").val(data.customer);
+				}
+				else {
+					$("#finishReseller").empty().prop('disabled', true);
+					$("#finishCustomer").empty().prop('disabled', true);
+				}			
 				$('#selectStaticOkButton').removeAttr('disabled');
 				$('#selectStaticOkButton').removeClass('ui-state-disabled');
 			}, 'json');
@@ -1042,6 +1060,16 @@ $("#finishStack").change(function() {
 		});
  	}
 });
+$("#finishReseller").change(function() {
+	var value = $(this).val();
+	$("#finishCustomer").empty().append($('<option value=""></option>'));
+	if ('' != value) {
+ 		var customers = resellers[value]['customers'];
+		$.each(customers, function(key, val) {
+			$("#finishCustomer").append($('<option value="' + key + '">' + val + '</option>'));
+		});
+ 	}
+});
 EOS
 , CClientScript::POS_READY);
 	
@@ -1050,6 +1078,7 @@ EOS
 	Yii::app()->clientScript->registerScript('finishdialog2', <<<EOS
 	var persistentpools =  $.parseJSON('{$ppools}');
 	var softwarestacks = null;
+	var resellers = null;
 EOS
 , CClientScript::POS_END);
 	
@@ -1081,6 +1110,16 @@ EOS
 			<label style="width: 180px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationType'); ?> </label>
 			<input type="radio" id="radiosubtype1" name="FinishForm[subtype]" value="Server" checked="checked" /><label for="radiosubtype1">Server</label>
 			<input type="radio" id="radiosubtype2" name="FinishForm[subtype]" value="Desktop" /><label for="radiosubtype2">Desktop</label>
+		</div>
+		<br/>
+		<div>
+			<label for="finishReseller" style="width: 150px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationReseller'); ?> </label>
+			<?php echo CHtml::dropDownList('FinishForm[reseller]', '', array(), array('prompt' => '', 'id' => 'finishReseller')); ?>
+		</div>
+		<br/>
+		<div>
+			<label for="finishCustomer" style="width: 150px; float: left;"><?php echo Yii::t('vmtemplate', 'CreationCustomer'); ?> </label>
+			<?php echo CHtml::dropDownList('FinishForm[customer]', '', array(), array('prompt' => '', 'id' => 'finishCustomer')); ?>
 		</div>
 		<br/>
 		<div>

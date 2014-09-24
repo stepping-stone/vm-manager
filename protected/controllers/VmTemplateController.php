@@ -570,6 +570,14 @@ class VmTemplateController extends Controller
 				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a node!')));
 				Yii::app()->end();
 			}
+			if (!isset($finishForm['reseller']) || '' == $finishForm['reseller']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a reseller!')));
+				Yii::app()->end();
+			}
+			if (!isset($finishForm['customer']) || '' == $finishForm['customer']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a customer!')));
+				Yii::app()->end();
+			}
 			if (!isset($finishForm['stack']) || '' == $finishForm['stack']) {
 				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a software stack!')));
 				Yii::app()->end();
@@ -604,8 +612,8 @@ class VmTemplateController extends Controller
 				$os->sstOperatingSystem = $result->operatingsystem->sstOperatingSystem;
 				$os->sstOperatingSystemType = $result->operatingsystem->sstOperatingSystemType;
 				$os->sstOperatingSystemVersion = $result->operatingsystem->sstOperatingSystemVersion;
-				$os->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
-				$os->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+				$os->sstBelongsToCustomerUID = $finishForm['customer']; // Yii::app()->user->customerUID;
+				$os->sstBelongsToResellerUID = $finishForm['reseller']; // Yii::app()->user->resellerUID;
 			}			
 			$vmstack = null;
 			$stack = LdapConfigurationSoftwareStack::model()->findByDn($finishForm['stack']);
@@ -618,8 +626,8 @@ class VmTemplateController extends Controller
 				$vmstack->sstEnvironmentName = $finishForm['env'];
 				$vmstack->sstBusinessLogicRoleName = $stack->sstBusinessLogicRoleName;
 				
-				$vmstack->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
-				$vmstack->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+				$vmstack->sstBelongsToCustomerUID = $finishForm['customer']; // Yii::app()->user->customerUID;
+				$vmstack->sstBelongsToResellerUID = $finishForm['reseller']; // Yii::app()->user->resellerUID;
 			}
 			else {
 				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Software stack not found!')));
@@ -652,8 +660,8 @@ class VmTemplateController extends Controller
 			$vm->removeAttribute(array('objectClass', 'member'));
 			$vm->setBranchDn('ou=virtual machines,ou=virtualization,ou=services');
 
-			$vm->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
-			$vm->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+			$vm->sstBelongsToCustomerUID = $finishForm['customer']; // Yii::app()->user->customerUID;
+			$vm->sstBelongsToResellerUID = $finishForm['reseller']; // Yii::app()->user->resellerUID;
 			$vm->sstOsBootDevice = 'hd';
 			$vm->sstSpicePort = CPhpLibvirt::getInstance()->nextSpicePort($vm->sstNode);
 			$vm->sstSpicePassword = CPhpLibvirt::getInstance()->generateSpicePassword();
@@ -757,8 +765,8 @@ class VmTemplateController extends Controller
 				$dhcpvm = new LdapDhcpVm();
 				$dhcpvm->setBranchDn('ou=virtual machines,' . $range->subnet->dn);
 				$dhcpvm->cn = $vm->sstVirtualMachine;
-				$dhcpvm->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
-				$dhcpvm->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+				$dhcpvm->sstBelongsToCustomerUID = $finishForm['customer']; //Yii::app()->user->customerUID;
+				$dhcpvm->sstBelongsToResellerUID = $finishForm['reseller']; //Yii::app()->user->resellerUID;
 				$dhcpvm->sstBelongsToPersonUID = Yii::app()->user->UID;
 	
 				$dhcpvm->dhcpHWAddress = 'ethernet ' . $firstMac;
@@ -771,8 +779,8 @@ class VmTemplateController extends Controller
 				$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
 				$data['ou'] = array('groups');
 				$data['description'] = array('This is the assigned groups subtree.');
-				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$data['sstBelongsToCustomerUID'] = array($finishForm['customer']); // Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array($finishForm['reseller']); // Yii::app()->user->resellerUID);
 				$dn = 'ou=groups,' . $vm->dn;
 				$server->add($dn, $data);
 	
@@ -2230,7 +2238,7 @@ EOS;
 	}
 	
 	public function actionGetPersistentCreationData($dn) {
-		$json = array('stacks' => array());
+		$json = array('stacks' => array(), 'resellers' => array());
 		$template = LdapVmFromProfile::model()->findByDn($dn);
 		$os = $template->operatingsystem;
 		if (!is_null($os)) {
@@ -2263,7 +2271,18 @@ EOS;
 		$json['hostname'] = $config[0]->getNextHostname();
 		$json['fullname'] = $json['hostname'] . '.' . $config[0]->sstNetworkDomainName;
 		$json['domainname'] = $config[0]->sstNetworkDomainName;
-		
+		$resellers = LdapReseller::model()->findAll(array('filterName' => 'all'));
+		foreach($resellers as $reseller) {
+			$data = array();
+			$data['name'] = $reseller->o;
+			$data['customers'] = array();
+			foreach($reseller->customer as $customer) {
+				$data['customers'][$customer->uid] = $customer->o;
+			}
+			$json['resellers'][$reseller->uid] = $data;
+		}
+		$json['reseller'] = Yii::app()->user->getResellerUid();
+		$json['customer'] = Yii::app()->user->getCustomerUid();
 		$this->sendJsonAnswer($json);
 	}
 
