@@ -788,8 +788,8 @@ class VmTemplateController extends Controller
 				$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
 				$data['ou'] = array('people');
 				$data['description'] = array('This is the assigned people subtree.');
-				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$data['sstBelongsToCustomerUID'] = array($finishForm['customer']); // Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array($finishForm['reseller']); // Yii::app()->user->resellerUID);
 				$dn = 'ou=people,' . $vm->dn;
 				$server->add($dn, $data);
 				
@@ -1756,76 +1756,122 @@ EOS;
 				$vm = LdapVmFromTemplate::model()->findByDn($dn);
 				//echo '<pre>' . print_r($vm, true) . '</pre>';
 				if (!is_null($vm)) {
-					$answer = array('node' => $vm->sstNode, 'statustxt' => '');
-					$libvirt = CPhpLibvirt::getInstance();
-					$status = $libvirt->getVmStatus(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
-					if ($vm->hasActiveBackup()) {
-						$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'backup', 'spice' => $vm->getSpiceUri()));
+					$answer = array('name' => $vm->sstDisplayName, 'node' => $vm->sstNode, 'substatus' => '', 'machinemode' => '', 'statustxt' => '');
+					//
+					// check sstVirtualMachineMode
+					if (isset($vm->sstVirtualMachineMode)) {
+						$answer['machinemode'] = $vm->sstVirtualMachineMode;
 					}
 					else {
-						if ($status['active']) {
-							$memory = $this->getHumanSize($status['memory'] * 1024);
-							$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
-							//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode);
-							$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode, 'spice' => $vm->getSpiceUri());
+						$answer['machinemode'] = 'do not use';
+						$vm->setOverwrite(true);
+						$vm->sstVirtualMachineMode = 'do not use';
+						$vm->save();
+						
+					}
+					//
+					// check for backup
+					if (!is_null($vm->backup)) {
+						foreach($vm->backup->backups as $backup) {
+							if ('finished' !== $backup->sstProvisioningMode) {
+								if (!isset($backup->sstProvisioningReturnValue) || 0 == $backup->sstProvisioningReturnValue) {
+									$answer['substatus'] = 'backing up';
+									break;
+								}
+							}
 						}
-						else {
-							if (isset($vm->sstThinProvisioningVirtualMachine)) {
-								$prov = $vm->sstThinProvisioningVirtualMachine;
-								foreach($vm->sstThinProvisioningVirtualMachine as $uuid) {
-									$othervm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $uuid)));
-
-									// Referenced VM was removed, unlink and continue
-									if (is_null($othervm)) {
-										Yii::log("VM {$uuid} got removed before streaming was registered as finished", 'info', 'vmTemplateController');
-										unset($prov[array_search($uuid, $prov)]);
-										continue;
-									}
-
-									$finished = true;
-									$disks = $vm->devices->getDisksByDevice('disk');
-									foreach($disks as $disk) {
-										Yii::trace("Checking for blockjob on {$disk->sstDisk} for VM {$uuid}", 'vmTemplateController');
-										$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, $disk->sstDisk);
-										// streaming is not done if either an error is returned (FALSE) or job is still running (array)
-										if (true !== $info) {
-											Yii::trace("Disk {$disk->sstDisk} is streaming for VM {$uuid}", 'vmTemplateController');
-											$finished = false;
-											break;
-										}
-										// TODO: check disks for backing file
-									}
-									if ($finished) {
-										Yii::trace("No disk was streaming for VM {$uuid}", 'vmTemplateController');
-										unset($prov[array_search($uuid, $prov)]);
-									}
-								}
-								if (0 == count($prov)) {
-									$data = array('sstThinProvisioningVirtualMachine' => array());
-									CLdapServer::getInstance()->modify_del($vm->getDn(), $data);
-
-									$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
-								}
-								else {
-									$vm->setOverwrite(true);
-									$prov = array_values($prov);
-									$vm->sstThinProvisioningVirtualMachine = $prov;
-									$vm->update();
-
-									$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'preparing', 'spice' => $vm->getSpiceUri()));
-								}
+					}
+					
+					//
+					// check for migrating
+					if (isset($vm->sstMigrationNode)) {
+						$answer['substatus'] = 'migrating';
+					}
+					
+					$libvirt = CPhpLibvirt::getInstance();
+					if ($status = $libvirt->getVmStatus(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine))) {
+						$state = '';
+						switch($status['state']) {
+							case CPhpLibvirt::$VIR_DOMAIN_RUNNING:		$state = 'running'; break;
+							case CPhpLibvirt::$VIR_DOMAIN_BLOCKED:		$state = 'blocked'; break;
+							case CPhpLibvirt::$VIR_DOMAIN_PAUSED:		$state = 'paused'; break;
+							case CPhpLibvirt::$VIR_DOMAIN_SHUTDOWN:		$state = 'shutdown'; break;
+							case CPhpLibvirt::$VIR_DOMAIN_SHUTOFF:		$state = 'stopped'; break;
+							case CPhpLibvirt::$VIR_DOMAIN_CRASHED:		$state = 'crashed'; break;
+							case CPhpLibvirt::$VIR_DOMAIN_PMSUSPENDED:	$state = 'suspended'; break;
+						}
+						$answer['status'] = $state;
+						$answer['spice'] = $vm->getSpiceUri();
+// 						if ($vm->hasActiveBackup()) {
+// 							$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'backup', 'spice' => $vm->getSpiceUri()));
+// 						}
+// 						else {
+						{
+							if ($status['active']) {
+								$memory = $this->getHumanSize($status['memory'] * 1024);
+								$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
+								//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode);
+								$answer['mem'] = $memory . ' / ' . $maxmemory;
 							}
 							else {
-								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
+								if (isset($vm->sstThinProvisioningVirtualMachine)) {
+									$prov = $vm->sstThinProvisioningVirtualMachine;
+									foreach($vm->sstThinProvisioningVirtualMachine as $uuid) {
+										$othervm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $uuid)));
+	
+										// Referenced VM was removed, unlink and continue
+										if (!is_null($othervm)) {
+											$finished = true;
+											$disks = $vm->devices->getDisksByDevice('disk');
+											foreach($disks as $disk) {
+												$info = $libvirt->checkBlockJob($othervm->node->getLibvirtUri(), $uuid, $disk->sstDisk);
+												if (true !== $info) {
+													$finished = false;
+													break;
+												}
+											}
+											if ($finished) {
+												unset($prov[array_search($uuid, $prov)]);
+											}
+										}
+										else {
+											unset($prov[array_search($uuid, $prov)]);
+										}
+									}
+									if (0 == count($prov)) {
+										$deldata = array('sstThinProvisioningVirtualMachine' => array());
+										CLdapServer::getInstance()->modify_del($vm->getDn(), $deldata);
+									}
+									else {
+										$vm->setOverwrite(true);
+										$prov = array_values($prov);
+										$vm->sstThinProvisioningVirtualMachine = $prov;
+										$vm->update();
+	
+										$answer['substatus'] = 'preparing';
+									}
+								}
+// 								else {
+// 									$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
+// 								}
 							}
 						}
+						$answer['_t_status'] = Yii::t('vmstatus', $answer['status']);
+						$answer['_t_substatus'] = Yii::t('vmstatus', $answer['substatus']);
+						$answer['_t_machinemode'] = Yii::t('vmstatus', $answer['machinemode']);
+						$data[$vm->sstVirtualMachine] = $answer;
+					}
+					else {
+						$data = array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt getVmStatus failed!');
 					}
 				}
 				else {
-					$data['error'] = 1;
-					$data['message'] = 'CPhpLibvirt Vm \'' . $dn . '\' not found!';
+					$data = array('error' => 1, 'message' => 'CPhpLibvirt Vm \'' . $dn . '\' not found!');
 				}
 			}
+		}
+		else {
+			$data = array('error' => 1, 'message' =>  __FILE__ . '(' . __LINE__ . '): CPhpLibvirt Vm \'' . $dn . '\' not found!');
 		}
 		$this->sendJsonAnswer($data);
 	}
@@ -2053,16 +2099,17 @@ EOS;
 			$vm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_GET['dn']);
 			if (!is_null($vm)) {
 				$libvirt = CPhpLibvirt::getInstance();
-				$dev = array($_GET['dev']);
-				$dev[1] = 'hd' === $_GET['dev'] ? 'cdrom' : 'hd';
+				//$dev = array($_GET['dev']);
+				//$dev[1] = 'hd' === $_GET['dev'] ? 'cdrom' : 'hd';
+				$dev = array('hd' === $vm->sstOsBootDevice ? 'cdrom' : 'hd', $vm->sstOsBootDevice);
 				if ($libvirt->changeVmBootDevice(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine, 'device1' => $dev[0], 'device2' => $dev[1]))) {
 					$vm->setOverwrite(true);
-					$vm->sstOsBootDevice = $_GET['dev'];
+					$vm->sstOsBootDevice = $dev[0];
 					$vm->save();
 					$this->sendAjaxAnswer(array('error' => 0));
 				}
 				else {
-					$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt startVm failed!'));
+					$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt changeVmBootDevice failed!'));
 				}
 			}
 			else {

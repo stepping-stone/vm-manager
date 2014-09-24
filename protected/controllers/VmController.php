@@ -935,7 +935,7 @@ EOS;
 				$vm = CLdapRecord::model('LdapVm')->findByDn($dn);
 				//echo '<pre>' . print_r($vm, true) . '</pre>';
 				if (!is_null($vm)) {
-					$answer = array(/* 'type' => $vm->sstVirtualMachineType, 'subtype' => $vm->sstVirtualMachineSubType,*/ 'name' => $vm->sstDisplayName, 'node' => $vm->sstNode, 'substatus' => '');
+					$answer = array(/* 'type' => $vm->sstVirtualMachineType, 'subtype' => $vm->sstVirtualMachineSubType,*/ 'name' => $vm->sstDisplayName, 'spice' => $vm->getSpiceUri(), 'node' => $vm->sstNode, 'substatus' => '');
 					$checkStatus = true;
 					if ('dynamic' == $vm->sstVirtualMachineType) {
 						switch($vm->sstVirtualMachineSubType) {
@@ -962,7 +962,6 @@ EOS;
 								}
 								break;
 						}
-						$data[$vm->sstVirtualMachine] = $answer;
 					}
 					if ($checkStatus) {
 						//
@@ -990,6 +989,7 @@ EOS;
 								$memory = $this->getHumanSize($status['memory'] * 1024);
 								$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
 								//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'cpu' => $status['cpuTime'], 'cpuOrig' => $status['cpuTimeOrig']);
+								$state = '';
 								switch($status['state']) {
 									case CPhpLibvirt::$VIR_DOMAIN_RUNNING:		$state = 'running'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_BLOCKED:		$state = 'blocked'; break;
@@ -1039,7 +1039,8 @@ EOS;
 										}
 									}
 								}
-								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => $state, 'mem' => $memory . ' / ' . $maxmemory, 'spice' => $vm->getSpiceUri()));
+								$answer['status'] = $state;
+								$answer['mem'] = $memory . ' / ' . $maxmemory;
 							}
 							else if ('dynamic' == $vm->sstVirtualMachineType && ('Desktop' == $vm->sstVirtualMachineSubType || 'Server' == $vm->sstVirtualMachineSubType)) {
 //								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'removed'));
@@ -1061,21 +1062,23 @@ EOS;
 							}
 							else {
 								$state = 'stopped';
-								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => $state, 'spice' => $vm->getSpiceUri()));
+								$answer['status'] = $state;
 							}
 						}
 						else {
-							$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt getVmStatus failed!'));
+							$data = array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt getVmStatus failed!');
+							break;
 						}
 					}
+					$data[$vm->sstVirtualMachine] = $answer;
+					$data[$vm->sstVirtualMachine]['_t_status'] =  Yii::t('vmstatus', $answer['status']);
+					$data[$vm->sstVirtualMachine]['_t_substatus'] =  Yii::t('vmstatus', $answer['substatus']);
 				}
 				else {
-					$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt Vm \'' . $dn . '\' not found!'));
+					$data = array('error' => 1, 'message' =>  __FILE__ . '(' . __LINE__ . '): CPhpLibvirt Vm \'' . $dn . '\' not found!');
 				}
 			}
 		}
-		$data[$vm->sstVirtualMachine]['_t_status'] =  Yii::t('vmstatus', $state);
-		$data[$vm->sstVirtualMachine]['_t_substatus'] =  Yii::t('vmstatus', $answer['substatus']);
 		$this->sendJsonAnswer($data);
 	}
 

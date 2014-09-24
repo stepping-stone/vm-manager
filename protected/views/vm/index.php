@@ -80,8 +80,8 @@ function refreshVmButtons(id, buttons) {
 		if (active != buttonState[id][key]) {
 			if (active) {
 				// This button was not active on last call
-				$('#' + key + '_' + id).css({cursor: 'pointer'});
-				$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '.png');
+				$('#' + key + '_' + id).css({cursor: 'pointer'}).removeClass('notallowed');
+				//$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '.png');
 				switch(key) {
 					case 'vm_start': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); startVm(id);}); break;
 					case 'vm_reboot': break;
@@ -94,8 +94,8 @@ function refreshVmButtons(id, buttons) {
 				}
 			}
 			else {
-				$('#' + key + '_' + id).css({cursor: 'auto'});
-				$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '_n.png');
+				$('#' + key + '_' + id).css({cursor: 'auto'}).addClass('notallowed');
+				//$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '_n.png');
 				$('#' + key + '_' + id).unbind('click');
 			}
 		}
@@ -182,7 +182,7 @@ function refreshNextVm()
 							case 'backing up':	buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false}; break;
 							case 'streaming':	buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false}; break;
 							case 'migrating':	buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': true, 'vm_del': false, 'vm_login': false}; break;
-							case '': 			buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false}; break;
+							default: 			buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false}; break;
 						}
 						state = 'red';
 						break;
@@ -1040,41 +1040,41 @@ EOS
 				name = row['name'];
 				var statusact = '';
 				if ('persistent' == row['type']) {
-					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start_n.png" alt="" title="start VM" class="action" />';
-					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown_n.png" alt="" title="shutdown VM" class="action" />';
-					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy_n.png" alt="" title="destroy VM" class="action" />';
+					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start.png" alt="" title="start VM" class="action notallowed" />';
+					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown.png" alt="" title="shutdown VM" class="action notallowed" />';
+					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="destroy VM" class="action notallowed" />';
 					statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action" onclick="selectNode(\'' + ids[i] + '\');" />';
 				}
 				else if ('System-Preparation' == row['subtype']) {
-					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start_n.png" alt="" title="start VM" class="action" />';
-					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown_n.png" alt="" title="shutdown VM" class="action" />';
+					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start.png" alt="" title="start VM" class="action notallowed" />';
+					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown.png" alt="" title="shutdown VM" class="action notallowed" />';
 				}
 				else if ('Golden-Image' == row['subtype']) {
-					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start_n.png" alt="" title="start a test VM" class="action" />';
+					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start.png" alt="" title="start a test VM" class="action notallowed" />';
 				}
 				else {
 					statusact += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
 					statusact += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
-					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy_n.png" alt="" title="destroy VM" class="action" />';
+					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="destroy VM" class="action notallowed" />';
 					statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action" onclick="selectNode(\'' + ids[i] + '\');" />';
 				}
 				var act = '';
 				if ('persistent' == row['type']) {
-					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit_n.png" alt="" title="edit VM" class="action" />';
-					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM" class="action" />';
-					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM" class="action" />';
+					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit.png" alt="" title="edit VM" class="action notallowed" />';
+					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action notallowed" />';
+					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login.png" alt="" title="use VM" class="action notallowed" />';
 					act += '<img src="{$imagesurl}/vmuser_add.png" style="cursor: pointer;" alt="" title="Assign users to this VM" class="action" onclick="assignUser(\'' + row['dn'] + '\');" />';
 					act += '<img src="{$imagesurl}/vmgroup_add.png" style="cursor: pointer;" alt="" title="Assign groups to this VM" class="action" onclick="assignGroup(\'' + row['dn'] + '\');" />';
 				}
 				else if('System-Preparation' == row['subtype']) {
-					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit_n.png" alt="" title="edit VM" class="action" />';
-					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM" class="action" />';
-					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM" class="action" />';
+					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit.png" alt="" title="edit VM" class="action notallowed" />';
+					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action notallowed" />';
+					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login.png" alt="" title="use VM" class="action notallowed" />';
 					act += '<img src="{$imagesurl}/vm_goldenimage.png" style="cursor: pointer;" alt="" title="create Golden-Image VM" class="action" onclick="goldenImage(\'' + ids[i] + '\');" />';
 				}
 				else if ('Golden-Image' == row['subtype']) {
-					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit_n.png" alt="" title="edit VM" class="action" />';
-					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM" class="action" />';
+					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit.png" alt="" title="edit VM" class="action notallowed" />';
+					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action notallowed" />';
 					if ('false' == row['agi']) {
 						act += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
 						act += '<img src="{$imagesurl}/vm_active_goldenimage.png" style="cursor: pointer;" alt="" title="activate Golden-Image" class="action" onclick="activateGoldenImage(\'' + ids[i] + '\');" />';
@@ -1082,8 +1082,8 @@ EOS
 				}
 				else {
 					act += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
-					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM" class="action" />';
-					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM" class="action" />';
+					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action notallowed" />';
+					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login.png" alt="" title="use VM" class="action notallowed" />';
 				}
 				var node = '<a href="${nodeurl}?node=' + row['nodename'] + '">' + row['nodename'] + '</a>';
 				$('#{$gridid}_grid').setRowData(ids[i],{/*'name': name,*/ 'act': act, 'statusact': statusact, 'node': node});

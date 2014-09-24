@@ -30,4 +30,5 @@ return array (
   'backing up' => 'backing up',
   'migrating' => 'migrating',
   'streaming' => 'streaming',
+  'preparing' => 'preparing',
 );
