@@ -49,7 +49,7 @@ class LdapConfigurationHostname extends CLdapRecord {
 			
 		$this->setOverwrite(true);
 		$this->businessCategory = 'locked';
-		$this->update(array('seeAlso'));
+		$this->update(array('businessCategory'));
 	
 		$number = (int) $this->sstNetworkHostnameNextFreeNumber;
 	
