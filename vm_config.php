@@ -94,6 +94,9 @@ return array(
 			// Don't change the following params if you don't know what you are doing
 			'spiceByName' => false,
 			'disableSpiceAcceleration' => false,
+			'cpu' => array(
+				'maxVCPU' => 16,
+			),
 		),
 	),
 );

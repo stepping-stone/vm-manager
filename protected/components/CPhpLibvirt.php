@@ -279,7 +279,7 @@ class CPhpLibvirt {
 	<name>{$data[\'sstName\']}</name>
 	<uuid>{$data[\'sstUuid\']}</uuid>
 	<memory>{$data[\'sstMemory\']}</memory>
-	<vcpu>{$data[\'sstVCPU\']}</vcpu>
+	<vcpu placement=\'static\' current=\'{$data[\'sstVCPU\']}\'>{$data[\'sstMaxVCPU\']}</vcpu>
 	<cpu mode=\'host-model\'/>
 	<os>
 		<type arch=\"{$data[\'sstOSArchitecture\']}\" machine=\"{$data[\'sstOSMachine\']}\">{$data[\'sstOSType\']}</type>
@@ -400,6 +400,8 @@ class CPhpLibvirt {
 		if ($data['devices']['graphics']['spiceacceleration']) {
 			$spiceparams = '			<image compression="off"/><jpeg compression="never"/><zlib compression="never"/><streaming mode="off"/>' . "\n";
 		}
+		$data['sstMaxVCPU'] = Yii::app()->params['virtualization']['cpu']['maxVCPU'];
+
 
 		$template = CPhpLibvirt::$xmlTemplate;
 		if (false === eval("\$retval = \"$template\";")) {
