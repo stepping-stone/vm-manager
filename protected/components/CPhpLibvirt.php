@@ -379,7 +379,7 @@ class CPhpLibvirt {
 					(isset($disk['sstDriverCache']) && '' != $disk['sstDriverCache'] ? '" cache="' . $disk['sstDriverCache'] : '') . '"/>' . "\n";
 				}
 				$devices .= '			<source protocol="' . $disk['sstSourceProtocol'] . '" name="' . $disk['sstSourceName'] . '">' . "\n";
-				$devices .= '				<host name="' .  $disk['sstSourceHostName'] . '"/>' . "\n";
+				$devices .= '				<host name="' .  $disk['sstSourceHostName'] . '" port="' . $disk['sstSourcePort'] . '"/>' . "\n";
 				$devices .= '			</source>' . "\n";
 				$devices .= '			<target dev="' . $disk['sstDisk'] . '" bus="' . $disk['sstTargetBus'] . '"/>' . "\n";
 				if (isset($disk['sstReadonly']) && 'TRUE' == $disk['sstReadonly']) {

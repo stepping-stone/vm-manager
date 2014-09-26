@@ -77,13 +77,18 @@ return array(
 			'disk' => array(
 				'sstSourceName' => array(
 					'vm-persistent' => array('/var/virtualization', 'virtualization'), // [0] = search string, [1] = replace string
-					'vm-templates' => array('/var/virtualization', 'virtualization'),
-					'vm-dynamic' => array('/var/virtualization', 'virtualization'),
+					'vm-templates'  => array('/var/virtualization', 'virtualization'),
+					'vm-dynamic'    => array('/var/virtualization', 'virtualization'),
 				),
 				'sstSourceHostName' => array(
 					'vm-persistent' => '10.1.120.11',
-					'vm-templates' => '10.1.120.11',
-					'vm-dynamic' => '10.1.120.11',
+					'vm-templates'  => '10.1.120.11',
+					'vm-dynamic'    => '10.1.120.11',
+				),
+				'sstSourcePort' => array(
+					'vm-persistent' => 24007,
+					'vm-templates'  => 24007,
+					'vm-dynamic'    => 24007,
 				),
 			),
 			// Don't change the following params if you don't know what you are doing

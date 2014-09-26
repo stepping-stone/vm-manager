@@ -1200,7 +1200,8 @@ EOS;
 										$disk->sstType = 'network';
 										$disk->sstSourceProtocol = 'gluster';
 										$disk->sstSourceHostName = Yii::app()->params['virtualization']['disk']['sstSourceHostName']['vm-dynamic'];
-										$disk->sstSourceFile = '';
+										$disk->sstSourcePort     = Yii::app()->params['virtualization']['disk']['sstSourcePort']['vm-dynamic'];
+										$disk->sstSourceFile     = '';
 									}
 									else if ('file' === $rdisk->sstType) {
 										$disk->sstSourceFile = $sstSourceFile;
