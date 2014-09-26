@@ -74,27 +74,33 @@ return array(
 		'virtualization' => array(
 			'version' => '1.2.18.12',
 
+			// Disk specific settings.
 			'disk' => array(
+				// Path / volume of the source.
 				'sstSourceName' => array(
 					'vm-persistent' => array('/var/virtualization', 'virtualization'), // [0] = search string, [1] = replace string
 					'vm-templates'  => array('/var/virtualization', 'virtualization'),
 					'vm-dynamic'    => array('/var/virtualization', 'virtualization'),
 				),
+				// The hostname of the source host.
 				'sstSourceHostName' => array(
 					'vm-persistent' => '10.1.120.11',
 					'vm-templates'  => '10.1.120.11',
 					'vm-dynamic'    => '10.1.120.11',
 				),
+				// The port of the source host.
 				'sstSourcePort' => array(
 					'vm-persistent' => 24007,
 					'vm-templates'  => 24007,
 					'vm-dynamic'    => 24007,
 				),
 			),
-			// Don't change the following params if you don't know what you are doing
+			// Don't change the following params if you don't know what you are doing.
 			'spiceByName' => false,
 			'disableSpiceAcceleration' => false,
+			// CPU specific settings.
 			'cpu' => array(
+				// The maximum number of available vCPU's (used for CPU hotplug).
 				'maxVCPU' => 16,
 			),
 		),
