@@ -126,8 +126,9 @@ class CPhpLibvirt {
 					foreach($data['devices']['disks'] as $disk) {
 						//echo $disk['sstDevice'] . ': ' . $disk['sstDisk'] . '<br/>';
 						if ('disk' == $disk['sstDevice']) {
-							Yii::log('startVmWithBlockJob: libvirt_domain_block_pull(' . $data['libvirt'] . ', ' . $disk['sstDisk'] . ', 10)', 'profile', 'phplibvirt');
-							if (0 != libvirt_domain_block_pull($domain, $disk['sstDisk'], 10)) {
+							private $bandwidth = Yii::app()->params['virtualization']['libvirt']['bandwidth'];
+							Yii::log('startVmWithBlockJob: libvirt_domain_block_pull(' . $data['libvirt'] . ', ' . $disk['sstDisk'] . ', ' . $bandwidth . ')', 'profile', 'phplibvirt');
+							if (0 != libvirt_domain_block_pull($domain, $disk['sstDisk'], $bandwidth)) {
 								return false;
 							}
 							else {
