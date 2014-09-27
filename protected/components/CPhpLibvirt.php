@@ -281,7 +281,9 @@ class CPhpLibvirt {
 	<uuid>{$data[\'sstUuid\']}</uuid>
 	<memory>{$data[\'sstMemory\']}</memory>
 	<vcpu placement=\'static\' current=\'{$data[\'sstVCPU\']}\'>{$data[\'sstMaxVCPU\']}</vcpu>
-	<cpu mode=\'host-model\'/>
+	<cpu mode=\'custom\'>
+		<model>SandyBridge</model>
+	</cpu>
 	<os>
 		<type arch=\"{$data[\'sstOSArchitecture\']}\" machine=\"{$data[\'sstOSMachine\']}\">{$data[\'sstOSType\']}</type>
 		<boot dev=\"{$data[\'sstOSBootDevice\']}\"/>
