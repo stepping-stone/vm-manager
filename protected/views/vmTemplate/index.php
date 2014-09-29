@@ -880,7 +880,12 @@ $this->widget('ext.zii.CJqGrid', array(
 			'Standard'=>array('edit'=>false, 'add' => false, 'del' => false, 'search' => false),
 		),
 		'filter' => array(
-			'stringResult' => false,'searchOnEnter' => false
+			'stringResult' => false,'searchOnEnter' => false, 'afterSearch' =>  'js:' . <<<EOS
+		function()
+		{
+			buttonState = [];
+		}
+EOS
 		),
 	),
      'options'=>array(
