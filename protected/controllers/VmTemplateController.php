@@ -1098,7 +1098,7 @@ class VmTemplateController extends Controller
 		$s .= '<total>' . $total_pages . '</total>';
 		$s .= '<records>' . $count . '</records>';
 
-		$i = 1;
+		$i = 1 + $start;
 		foreach ($vms as $vm) {
 			//	'colNames'=>array('No.', 'DN', 'UUID', 'Spice', 'Boot', 'Name', 'Displayname', 'Status', 'Run Action', 'Memory', 'CPU', 'Node', 'Action'),
 

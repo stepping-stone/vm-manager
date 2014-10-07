@@ -411,7 +411,7 @@ class VmController extends Controller
 		$s .= "<total>" . $total_pages . "</total>";
 		$s .= "<records>" . $count . "</records>";
 
-		$i = 1;
+		$i = 1 + $start;
 		foreach ($vms as $vm) {
 			//	'colNames'=>array('No.', 'DN', 'UUID', , 'Spice', 'Type', 'SubType', 'active Golden-Image', 'Name', 'Status', 'Run Action', 'Memory', 'CPU', 'Node', 'Action'),
 
