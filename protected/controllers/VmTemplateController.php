@@ -1205,12 +1205,19 @@ class VmTemplateController extends Controller
 		<td style="text-align: right; vertical-align: top;"><b>CPUs:</b></td>
 		<td style="vertical-align: top;">{$vm->sstVCPU}</td>
 EOS;
-		if (is_null($vm->sstThinProvisioningVirtualMachine)) {
+		if (!is_null($vm->sstThinProvisioningVirtualMachine)) {
 			echo <<< EOS
 		<td style="text-align: right; vertical-align: top;"><b>VM's streaming:</b></td>
 		<td style="vertical-align: top;" colspan="2">
 EOS;
-			echo 'asdf, asdf</td>';
+			$vmnames = array();
+			foreach($vm->sstThinProvisioningVirtualMachine as $vmuuid) {
+				$streamingvm = LdapVm::model()->findByAttributes(array('attr' => array('sstVirtualMachine' => $vmuuid)));
+				if (!is_null($streamingvm)) {
+					$vmnames[] = $streamingvm->sstDisplayName;
+				}
+			}
+			echo implode(', ', $vmnames) . '</td>';
 		}
 		else {
 			echo '<td colspan="3">&nbsp;</td>';
