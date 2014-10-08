@@ -1852,7 +1852,7 @@ EOS;
 										$vm->sstThinProvisioningVirtualMachine = $prov;
 										$vm->update();
 	
-										$answer['substatus'] = 'preparing';
+										$answer['substatus'] = 'streaming';
 									}
 								}
 // 								else {
