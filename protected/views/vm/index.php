@@ -207,7 +207,7 @@ function refreshNextVm()
 						break;
 					default: status = '??' + status;
 				}
-				status = data[row['uuid']]['_t_status']
+				//status = data[row['uuid']]['_t_status']
 				if ('' != data[row['uuid']]['substatus']) {
 					status += ', ' + data[row['uuid']]['_t_substatus'];
 				}

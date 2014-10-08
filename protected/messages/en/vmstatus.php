@@ -15,6 +15,7 @@
  *
  */
 return array (
+  'unknown' => 'Unknown',
   'running' => 'Running',
   'blocked' => 'Blocked',
   'paused' => 'Paused',
