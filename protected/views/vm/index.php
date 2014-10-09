@@ -1047,7 +1047,7 @@ EOS
 				if ('persistent' == row['type']) {
 					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start.png" alt="" title="start VM" class="action notallowed" />';
 					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown.png" alt="" title="shutdown VM" class="action notallowed" />';
-					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="destroy VM" class="action notallowed" />';
+					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="power off VM" class="action notallowed" />';
 					statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action" onclick="selectNode(\'' + ids[i] + '\');" />';
 				}
 				else if ('System-Preparation' == row['subtype']) {
@@ -1060,7 +1060,7 @@ EOS
 				else {
 					statusact += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
 					statusact += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
-					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="destroy VM" class="action notallowed" />';
+					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="power off VM" class="action notallowed" />';
 					statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action" onclick="selectNode(\'' + ids[i] + '\');" />';
 				}
 				var act = '';
