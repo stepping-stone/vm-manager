@@ -158,12 +158,15 @@ function refreshNextVm()
 							case 'backing up':	buttons = {'vm_start': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false,  'vm_edit': false, 'vm_del': false, 'vm_toogle': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false}; break;
 							//case 'streaming':	buttons = {'vm_start': false, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true,  'vm_edit': false, 'vm_del': false, 'vm_toogle': false, 'vm_login': true, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false}; break;
 							case 'migrating':	buttons = {'vm_start': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_toogle': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false}; break;
-							default: 			buttons = {'vm_start': false, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true,  'vm_edit': false, 'vm_del': false, 'vm_toogle': false, 'vm_login': true, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false}; break;
-						}
-						if ('first installation' == data[row['uuid']]['machinemode'] ||
-							'maintenance' == data[row['uuid']]['machinemode']  ||
-							'do not use' == data[row['uuid']]['machinemode'] ) {
-							buttons.vm_start = buttons.vm_edit = buttons.vm_de = buttons.vm_login = buttons.vmtemplate_finish = buttons.vmtemplate_finishdyn = false;
+							default: 			
+								buttons = {'vm_start': false, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true,  'vm_edit': false, 'vm_del': false, 'vm_toogle': false, 'vm_login': true, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false}; 
+								if ('first installation' == data[row['uuid']]['machinemode'] ||
+									'maintenance mode' == data[row['uuid']]['machinemode']  ||
+									'do not use' == data[row['uuid']]['machinemode'] ) {
+									buttons.vm_migrate = false;
+									buttons.vm_toogle = true;
+								}
+								break;
 						}
 						state = 'green';
 						break;
@@ -183,7 +186,7 @@ function refreshNextVm()
 							buttons.vm_start = buttons.vm_shutdown = buttons.vm_destroy = buttons.vm_migrate = buttons.vm_edit = buttons.vm_del = buttons.vm_toogle = buttons.vm_login = false;
 						}
 						else if ('first installation' == data[row['uuid']]['machinemode']  ||
-							'maintenance' == data[row['uuid']]['machinemode']  ||
+							'maintenance mode' == data[row['uuid']]['machinemode']  ||
 							'do not use' == data[row['uuid']]['machinemode'] ) {
 							buttons.vm_shutdown = buttons.vm_destroy = buttons.vm_login = buttons.vmtemplate_finish = buttons.vmtemplate_finishdyn = false;
 						}
@@ -954,7 +957,7 @@ EOS
 				var statusact = '';
 				statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start.png" alt="" title="start VM" class="action notallowed" />';
 				statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown.png" alt="" title="shutdown VM" class="action notallowed" />';
-				statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="destroy VM" class="action notallowed" />';
+				statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="power off VM" class="action notallowed" />';
 				statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action notallowed" />';
 				var act = '';
 				//act += '<a href="${detailurl}?dn=' + row['dn'] + '"><img src="{$imagesurl}/vmtemplate_detail.png" alt="" title="view VM Template" class="action" /></a>';
