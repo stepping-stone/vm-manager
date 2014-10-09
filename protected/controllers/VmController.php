@@ -991,6 +991,7 @@ EOS;
 								//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'cpu' => $status['cpuTime'], 'cpuOrig' => $status['cpuTimeOrig']);
 								$state = '';
 								switch($status['state']) {
+									case CPhpLibvirt::$VIR_DOMAIN_NOSTATE:		$state = 'unknown'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_RUNNING:		$state = 'running'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_BLOCKED:		$state = 'blocked'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_PAUSED:		$state = 'paused'; break;
@@ -998,6 +999,7 @@ EOS;
 									case CPhpLibvirt::$VIR_DOMAIN_SHUTOFF:		$state = 'stopped'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_CRASHED:		$state = 'crashed'; break;
 									case CPhpLibvirt::$VIR_DOMAIN_PMSUSPENDED:	$state = 'suspended'; break;
+									default: $state = '?? ' . $status['state']; break;
 								}
 								if ('persistent' === $vm->sstVirtualMachineType) {
 									//
