@@ -35,35 +35,34 @@ return array(
 			'routes'=>array(
 				// uncomment the following to log messages for ldap actions
 //				array(
-//					'class' => 'CFileLogRoute',
-//					'levels' => 'profile',
+//					'class'      => 'CFileLogRoute',
+//					'levels'     => 'profile',
 //					'categories' => 'ext.ldaprecord.*',
-//					'logFile' => 'ldaprecord.log'
+//					'logFile'    => 'ldaprecord.log'
 //				),
 				// uncomment the following to log messages for libvirt actions
 //				array(
-//					'class' => 'CFileLogRoute',
-//					'levels' => 'profile',
+//					'class'      => 'CFileLogRoute',
+//					'levels'     => 'profile',
 //					'categories' => 'phplibvirt',
-//					'logFile' => 'phplibvirt.log'
+//					'logFile'    => 'phplibvirt.log'
 //				),
 				array(
-					'class'=>'ext.ESysLogRoute',
-					'logName'=>'vm-manager',
-					'logFacility'=>LOG_LOCAL0,
-					'levels'=>'warning',
-					'categories' => 'ext.ldaprecord.* phplibvirt.log',
+					'class'       => 'ext.ESysLogRoute',
+					'logName'     => 'vm-manager',
+					'logFacility' => LOG_LOCAL0,
+					'levels'      => 'error, warning',
 				),
 			),
 		),
-		'ldap'=>array(
-			'class' => 'ext.ldaprecord.LdapComponent',
-			'serverclass' => 'COsbdLdapServer',
-			'server' => 'ldap://127.0.0.1/',
-			'port' => 389,
-			'bind_rdn' => 'cn=admin,dc=devroom,dc=de',
-			'bind_pwd' => 'flinx',
-			'base_dn' => 'dc=devroom,dc=de',
+		'ldap'             => array(
+			'class'        => 'ext.ldaprecord.LdapComponent',
+			'serverclass'  => 'COsbdLdapServer',
+			'server'       => 'ldap://127.0.0.1/',
+			'port'         => 389,
+			'bind_rdn'     => 'cn=admin,dc=devroom,dc=de',
+			'bind_pwd'     => 'flinx',
+			'base_dn'      => 'dc=devroom,dc=de',
 			'passwordtype' => 'SSHA',
 		),
 	),
@@ -96,7 +95,7 @@ return array(
 				),
 			),
 			// Don't change the following params if you don't know what you are doing.
-			'spiceByName' => false,
+			'spiceByName'              => false,
 			'disableSpiceAcceleration' => false,
 			// CPU specific settings.
 			'cpu' => array(
