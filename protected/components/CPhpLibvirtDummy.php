@@ -4,10 +4,14 @@
  *                    Germany
  *                    http://www.foss-group.de
  *                    support@foss-group.de
+ * and
+ * Copyright (C) 2013 - 2014 stepping stone GmbH
+ *                           Switzerland
+ *                           http://www.stepping-stone.ch
+ *                           support@stepping-stone.ch
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
- *  Axel Westhagen <axel.westhagen@limbas.com>
  *
  * Licensed under the EUPL, Version 1.1 or – as soon they
  * will be approved by the European Commission - subsequent

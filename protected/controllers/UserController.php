@@ -4,6 +4,11 @@
  *                    Germany
  *                    http://www.foss-group.de
  *                    support@foss-group.de
+ * and
+ * Copyright (C) 2013 - 2014 stepping stone GmbH
+ *                           Switzerland
+ *                           http://www.stepping-stone.ch
+ *                           support@stepping-stone.ch
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
