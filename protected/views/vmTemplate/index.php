@@ -719,6 +719,8 @@ function selectStaticPool(id)
 		open: function(event, ui) {
 			$('#selectStaticOkButton').attr('disabled', 'disabled');
 			$('#selectStaticOkButton').addClass('ui-state-disabled');
+			$('#infoSelectStatic').hide();
+			$('#infoSelectStaticMsg').html('');
 			$.get('{$getPersistentCreationDataUrl}', {'dn': row['dn']}, function(data) {
 				$("#finishId").val(id);
 				$("#finishPool").val("");
