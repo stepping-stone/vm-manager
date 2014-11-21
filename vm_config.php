@@ -76,7 +76,7 @@ return array(
 	// using Yii::app()->params['paramName']
 	'params'=>array(
 		'virtualization' => array(
-			'version' => '1.2.18.17',
+			'version' => '1.2.18.18',
 
 			// Disk specific settings.
 			'disk' => array(
