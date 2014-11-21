@@ -227,20 +227,17 @@ class CPhpLibvirt {
 		# Even if the migration failed, it is possible that the VM is now defined on the destination
 		# in which case we want the XML to be correct, otherwise we are done here.
 
-		if ( (false === libvirt_domain_migrate_to_uri2($domain, $data['newlibvirt'], null, $xml, $flags, $vmname, 0))
-			&& (false === libvirt_domain_lookup_by_name($dest_con, $vmname)) )
-		{
-			Yii::log("migrateVm: migration failed for VM $vmname from ${data['libvirt']} to ${data['newlibvirt']}", 'error', 'phplibvirt');
-			return false;
+		$migrate_result = libvirt_domain_migrate_to_uri2($domain, $data['newlibvirt'], null, $xml, $flags, $vmname, 0);
+
+		# whether or not the migration succeeded: if the domain exists on the destination, fix its XML definition
+		if (false !== libvirt_domain_lookup_by_name($dest_con, $vmname)) {
+		    if (false === libvirt_domain_define_xml($dest_con, $xml)) {
+			    Yii::log("migrateVm: could not redefine VM $vmname on destination ${data['newlibvirt']}", 'error', 'phplibvirt');
+			    return false;
+		    }
 		}
 
-		# if a valid resource is returned, cast it to a boolean 'true'
-		if (false === libvirt_domain_define_xml($dest_con, $xml)) {
-			Yii::log("migrateVm: could not redefine VM $vmname on destination ${data['newlibvirt']}", 'error', 'phplibvirt');
-			return false;
-		}
-
-		return true;
+		return $migrate_result;
 	}
 
 	public function changeVmBootDevice($data) {
