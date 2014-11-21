@@ -7,14 +7,15 @@
  *
  * and
  *
- * Copyright (C) 2013 stepping stone GmbH
- * Switzerland
- * http://www.stepping-stone.ch
- * support@stepping-stone.ch
+ * Copyright (C) 2014 stepping stone GmbH
+ *                    Switzerland
+ *                    http://www.stepping-stone.ch
+ *                    support@stepping-stone.ch
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
  *  Axel Westhagen <axel.westhagen@limbas.com>
+ *  Tiziano Müller <tiziano.mueller@stepping-stone.ch>
  *
  * Licensed under the EUPL, Version 1.1 or – as soon they
  * will be approved by the European Commission - subsequent
@@ -196,21 +197,50 @@ class CPhpLibvirt {
 	}
 
 	public function migrateVm($data) {
-//		echo print_r($data, true) . "\n";
 		$con = $this->getConnection($data['libvirt']);
-		Yii::log('migrateVm: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
-		$domain = libvirt_domain_lookup_by_name($con, $data['name']);
-		Yii::log('migrateVm: libvirt_domain_get_xml_desc(' . $data['libvirt'] . ',NULL)', 'profile', 'phplibvirt');
+		$vmname = $data['name'];
+
+		Yii::log("migrateVm: libvirt_domain_lookup_by_name(${data['libvirt']}, $vmname)", 'profile', 'phplibvirt');
+		$domain = libvirt_domain_lookup_by_name($con, $vmname);
+		Yii::log("migrateVm: libvirt_domain_get_xml_desc(${data['libvirt']}, NULL)", 'profile', 'phplibvirt');
 		$xmllibvirt = libvirt_domain_get_xml_desc($domain, NULL, self::$VIR_DOMAIN_XML_MIGRATABLE);
-		Yii::log('migrateVm: orig XML: ' . $xmllibvirt, 'profile', 'phplibvirt');
+		Yii::log("migrateVm: orig XML: $xmllibvirt", 'profile', 'phplibvirt');
 		$xml = $this->replaceXML($xmllibvirt, $data);
-		Yii::log('migrateVm:  new XML: ' . $xml, 'profile', 'phplibvirt');
+		Yii::log("migrateVm: new XML: $xml", 'profile', 'phplibvirt');
 				
-		$flags = self::$VIR_MIGRATE_LIVE | self::$VIR_MIGRATE_UNDEFINE_SOURCE | self::$VIR_MIGRATE_PEER2PEER | self::$VIR_MIGRATE_TUNNELLED | self::$VIR_MIGRATE_PERSIST_DEST | self::$VIR_MIGRATE_COMPRESSED;
-// 		Yii::log('migrateVm: libvirt_domain_migrate_to_uri(' . $data['libvirt'] . ', ' . $data['newlibvirt'] . ', ' . $flags . ', ' . $data['name'] . ',0)', 'profile', 'phplibvirt');
-// 		return libvirt_domain_migrate_to_uri($domain, $data['newlibvirt'], $flags, $data['name'], 0);
-		Yii::log('migrateVm: libvirt_domain_migrate_to_uri2(' . $data['libvirt'] . ', ' . $data['newlibvirt'] . ', null, <XML>, ' . $flags . ', ' . $data['name'] . ',0)', 'profile', 'phplibvirt');
-		return libvirt_domain_migrate_to_uri2($domain, $data['newlibvirt'], null, $xml, $flags, $data['name'], 0);
+		$flags = self::$VIR_MIGRATE_LIVE
+			| self::$VIR_MIGRATE_UNDEFINE_SOURCE
+			| self::$VIR_MIGRATE_PEER2PEER
+			| self::$VIR_MIGRATE_TUNNELLED
+			| self::$VIR_MIGRATE_PERSIST_DEST
+			| self::$VIR_MIGRATE_COMPRESSED;
+
+		$dest_con = $this->getConnection($data['newlibvirt']);
+		if (false === $dest_con)
+			return false;
+
+		Yii::log("migrateVm: libvirt_domain_migrate_to_uri2(${data['libvirt']}, ${data['newlibvirt']}, null, <XML>, $flags, $vmname, 0)", 'profile', 'phplibvirt');
+
+		# workaround a libvirt bug (https://bugzilla.redhat.com/835300) which causes the
+		# the inactive XML on the destination to be an exact copy of the source XML instead
+		# of the correct XML provided during migration, by redefining the XML on the destination.
+		# Even if the migration failed, it is possible that the VM is now defined on the destination
+		# in which case we want the XML to be correct, otherwise we are done here.
+
+		if ( (false === libvirt_domain_migrate_to_uri2($domain, $data['newlibvirt'], null, $xml, $flags, $vmname, 0))
+			&& (false === libvirt_domain_lookup_by_name($dest_con, $vmname)) )
+		{
+			Yii::log("migrateVm: migration failed for VM $vmname from ${data['libvirt']} to ${data['newlibvirt']}", 'error', 'phplibvirt');
+			return false;
+		}
+
+		# if a valid resource is returned, cast it to a boolean 'true'
+		if (false === libvirt_domain_define_xml($dest_con, $xml)) {
+			Yii::log("migrateVm: could not redefine VM $vmname on destination ${data['newlibvirt']}", 'error', 'phplibvirt');
+			return false;
+		}
+
+		return true;
 	}
 
 	public function changeVmBootDevice($data) {
