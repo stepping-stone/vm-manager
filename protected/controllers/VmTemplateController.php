@@ -346,6 +346,7 @@ class VmTemplateController extends Controller
 
 					$dhcpvm->dhcpHWAddress = 'ethernet ' . $firstMac;
 					$dhcpvm->dhcpStatements = 'fixed-address ' . $range->getFreeIp();
+					$dhcpvm->dhcpStatements = 'option host-name "' . $templatevm->sstDisplayName . '"';
 					$dhcpvm->save();
 
 					// Workaround to get Node
