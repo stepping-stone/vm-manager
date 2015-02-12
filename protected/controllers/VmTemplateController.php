@@ -7,13 +7,14 @@
  *
  * and
  *
- * Copyright (C) 2013 stepping stone GmbH
+ * Copyright (C) 2013-2015 stepping stone GmbH
  * Switzerland
  * http://www.stepping-stone.ch
  * support@stepping-stone.ch
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Tiziano Müller <tiziano.mueller@stepping-stone.ch>
  *
  * Licensed under the EUPL, Version 1.1 or – as soon they
  * will be approved by the European Commission - subsequent
@@ -1880,9 +1881,6 @@ EOS;
 					$data = array('error' => 1, 'message' => 'CPhpLibvirt Vm \'' . $dn . '\' not found!');
 				}
 			}
-		}
-		else {
-			$data = array('error' => 1, 'message' =>  __FILE__ . '(' . __LINE__ . '): CPhpLibvirt Vm \'' . $dn . '\' not found!');
 		}
 		$this->sendJsonAnswer($data);
 	}
