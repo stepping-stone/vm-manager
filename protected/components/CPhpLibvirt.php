@@ -320,7 +320,7 @@ class CPhpLibvirt {
 	<features>
 		{$features}
 	</features>
-	<clock offset='{$data['sstClockOffset']}'/>
+	<clock offset='{$data['sstClockOffset']}'>{$clocktimers}</clock>
 	<on_poweroff>{$data['sstOnPowerOff']}</on_poweroff>
 	<on_reboot>{$data['sstOnReboot']}</on_reboot>
 	<on_crash>{$data['sstOnCrash']}</on_crash>
@@ -385,6 +385,7 @@ EOD;
 
 	public function getXML($data) {
 		$data['sstMemory'] = floor($data['sstMemory'] / 1024);
+
 		$features = '';
 		foreach($data['sstFeature'] as $feature) {
 
@@ -420,6 +421,25 @@ EOD;
 
 			$features .= "<{$parsed_feat['name']}>$option_string</{$parsed_feat['name']}>";
 		}
+
+		$clocktimers = '';
+		foreach($data['sstClockTimer'] as $clocktimer) {
+			if (!preg_match("/^(?<name>\w+):\s?(?<attrs>(?:\w+=\w+,?)+)$/", $clocktimer, $parsed_timer)) {
+				Yii::log("getXML: ignoring unrecognized clock timer string: $clocktimer", 'error', 'phplibvirt');
+				continue;
+			}
+
+			$option_string = '';
+			// unpack the parameters/attributes from the rest of the string
+			foreach (explode(',', $parsed_timer['attrs']) as $option_attr) {
+				// unpack the key/value pairs to put '' around the values
+				list ($attr_name, $attr_value) = explode('=', $option_attr, 2);
+				// and add them to the element as attributes
+				$option_string .= "$attr_name='$attr_value' ";
+			}
+			$clocktimers .= "<timer name='{$parsed_timer['name']}' $option_string/>";
+		}
+
 		$devices = '';
 		if ($data['devices']['sound']) {
 			$devices .= '		<sound model="ac97"/>' . "\n";

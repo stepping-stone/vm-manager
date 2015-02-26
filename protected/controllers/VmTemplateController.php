@@ -1901,6 +1901,7 @@ EOS;
 				$params['sstName'] = $vm->sstVirtualMachine;
 				$params['sstUuid'] = $vm->sstVirtualMachine;
 				$params['sstClockOffset'] = $vm->sstClockOffset;
+				$params['sstClockTimer'] = $vm->sstClockTimer;
 				$params['sstMemory'] = $vm->sstMemory;
 				//$params['sstNode'] = $vm->sstNode;
 				$params['libvirt'] = $vm->node->getLibvirtUri();

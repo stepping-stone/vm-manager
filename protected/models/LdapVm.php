@@ -124,6 +124,7 @@ class LdapVm extends CLdapRecord {
 		$params['sstName'] = $this->sstVirtualMachine;
 		$params['sstUuid'] = $this->sstVirtualMachine;
 		$params['sstClockOffset'] = $this->sstClockOffset;
+		$params['sstClockTimer'] = $this->sstClockTimer;
 		$params['sstMemory'] = $this->sstMemory;
 		$params['sstNetworkHostname'] = $this->sstNetworkHostname;
 		$params['sstNetworkDomainName'] = $this->sstNetworkDomainName;
