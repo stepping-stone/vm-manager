@@ -309,7 +309,7 @@ class CPhpLibvirt {
 	<memory>{$data[\'sstMemory\']}</memory>
 	<vcpu placement=\'static\' current=\'{$data[\'sstVCPU\']}\'>{$data[\'sstMaxVCPU\']}</vcpu>
 	<cpu mode=\'custom\'>
-		<model>SandyBridge</model>
+		<model>{$data[\'sstCPUModel\']}</model>
 	</cpu>
 	<os>
 		<type arch=\"{$data[\'sstOSArchitecture\']}\" machine=\"{$data[\'sstOSMachine\']}\">{$data[\'sstOSType\']}</type>
@@ -466,6 +466,7 @@ class CPhpLibvirt {
 			$spiceparams = '			<image compression="off"/><jpeg compression="never"/><zlib compression="never"/><streaming mode="off"/>' . "\n";
 		}
 		$data['sstMaxVCPU'] = Yii::app()->params['virtualization']['cpu']['maxVCPU'];
+		$data['sstCPUModel'] = Yii::app()->params['virtualization']['cpu']['model'];
 
 
 		$template = CPhpLibvirt::$xmlTemplate;

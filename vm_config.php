@@ -106,6 +106,7 @@ return array(
 			'cpu' => array(
 				// The maximum number of available vCPU's (used for CPU hotplug).
 				'maxVCPU' => 16,
+				'model' => 'SandyBridge',
 			),
 			'libvirt' => array(
 				// The bandwidth used for blockjobs (cloning). In MiB/s.
