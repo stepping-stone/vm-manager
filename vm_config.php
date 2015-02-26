@@ -104,8 +104,6 @@ return array(
 			'disableSpiceAcceleration' => false,
 			// CPU specific settings.
 			'cpu' => array(
-				// The maximum number of available vCPU's (used for CPU hotplug).
-				'maxVCPU' => 16,
 				'model' => 'SandyBridge',
 			),
 			'libvirt' => array(

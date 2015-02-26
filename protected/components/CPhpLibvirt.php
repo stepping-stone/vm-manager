@@ -307,9 +307,10 @@ class CPhpLibvirt {
 	<name>{$data[\'sstName\']}</name>
 	<uuid>{$data[\'sstUuid\']}</uuid>
 	<memory>{$data[\'sstMemory\']}</memory>
-	<vcpu placement=\'static\' current=\'{$data[\'sstVCPU\']}\'>{$data[\'sstMaxVCPU\']}</vcpu>
+	<vcpu placement=\'static\'>{$data[\'sstVCPU\']}</vcpu>
 	<cpu mode=\'custom\'>
 		<model>{$data[\'sstCPUModel\']}</model>
+		<topology sockets=\'1\' cores=\'{$data[\'sstVCPU\']}\' threads=\'1\'/>
 	</cpu>
 	<os>
 		<type arch=\"{$data[\'sstOSArchitecture\']}\" machine=\"{$data[\'sstOSMachine\']}\">{$data[\'sstOSType\']}</type>
@@ -465,7 +466,6 @@ class CPhpLibvirt {
 		if ($data['devices']['graphics']['spiceacceleration']) {
 			$spiceparams = '			<image compression="off"/><jpeg compression="never"/><zlib compression="never"/><streaming mode="off"/>' . "\n";
 		}
-		$data['sstMaxVCPU'] = Yii::app()->params['virtualization']['cpu']['maxVCPU'];
 		$data['sstCPUModel'] = Yii::app()->params['virtualization']['cpu']['model'];
 
 
