@@ -7,7 +7,7 @@
  *
  * and
  *
- * Copyright (C) 2014 stepping stone GmbH
+ * Copyright (C) 2015 stepping stone GmbH
  *                    Switzerland
  *                    http://www.stepping-stone.ch
  *                    support@stepping-stone.ch
@@ -385,7 +385,38 @@ class CPhpLibvirt {
 		$data['sstMemory'] = floor($data['sstMemory'] / 1024);
 		$features = '';
 		foreach($data['sstFeature'] as $feature) {
-			$features .= "<$feature/>";
+
+			/* valid examples for feature strings:
+			 *   hyperv:relaxed+state=on,vapic+state=on,spinlocks+state=on+retries=8191
+			 *   acpi
+			 */
+			if (!preg_match("/^(?<name>\w+)(:\s?(?<options>(?:(?:\w+\+\w+=\w+),?)+))?$/", $feature, $parsed_feat)) {
+				Yii::log("getXML: ignoring unrecognized feature string: $feature", 'error', 'phplibvirt');
+				continue;
+			}
+
+			// if there are no options for the feature, simply continue with the feat as single element
+			if (!isset($parsed_feat['options'])) {
+				$features .= "<{$parsed_feat['name']}/>";
+				continue;
+			}
+
+			$option_string = "";
+
+			foreach (explode(',', $parsed_feat['options']) as $option) {
+				list($option_name, $option_attrs) = explode('+', $option, 2);
+				$option_string .= "<$option_name";
+				// unpack the parameters/attributes from the rest of the option string
+				foreach (explode('+', $option_attrs) as $option_attr) {
+					// unpack the key/value pairs to put '' around the values
+					list ($attr_name, $attr_value) = explode('=', $option_attr, 2);
+					// and add them to the element as attributes
+					$option_string .= " $attr_name='$attr_value'";
+				}
+				$option_string .= "/>";
+			}
+
+			$features .= "<{$parsed_feat['name']}>$option_string</{$parsed_feat['name']}>";
 		}
 		$devices = '';
 		if ($data['devices']['sound']) {
