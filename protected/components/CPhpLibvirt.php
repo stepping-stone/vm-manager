@@ -302,73 +302,74 @@ class CPhpLibvirt {
 		return $retval;
 	}
 
-	private static $xmlTemplate = '
-<domain type=\"{$data[\'sstType\']}\">
-	<name>{$data[\'sstName\']}</name>
-	<uuid>{$data[\'sstUuid\']}</uuid>
-	<memory>{$data[\'sstMemory\']}</memory>
-	<vcpu placement=\'static\'>{$data[\'sstVCPU\']}</vcpu>
-	<cpu mode=\'custom\'>
-		<model>{$data[\'sstCPUModel\']}</model>
-		<topology sockets=\'1\' cores=\'{$data[\'sstVCPU\']}\' threads=\'1\'/>
+	// only double quotes must be escaped due to the eval
+	private static $xmlTemplate = <<<'EOD'
+<domain type='{$data['sstType']}'>
+	<name>{$data['sstName']}</name>
+	<uuid>{$data['sstUuid']}</uuid>
+	<memory>{$data['sstMemory']}</memory>
+	<vcpu placement='static'>{$data['sstVCPU']}</vcpu>
+	<cpu mode='custom'>
+		<model>{$data['sstCPUModel']}</model>
+		<topology sockets='1' cores='{$data['sstVCPU']}' threads='1'/>
 	</cpu>
 	<os>
-		<type arch=\"{$data[\'sstOSArchitecture\']}\" machine=\"{$data[\'sstOSMachine\']}\">{$data[\'sstOSType\']}</type>
-		<boot dev=\"{$data[\'sstOSBootDevice\']}\"/>
+		<type arch='{$data['sstOSArchitecture']}' machine='{$data['sstOSMachine']}'>{$data['sstOSType']}</type>
+		<boot dev='{$data['sstOSBootDevice']}'/>
 	</os>
 	<features>
 		{$features}
 	</features>
-	<clock offset=\"{$data[\'sstClockOffset\']}\"/>
-	<on_poweroff>{$data[\'sstOnPowerOff\']}</on_poweroff>
-	<on_reboot>{$data[\'sstOnReboot\']}</on_reboot>
-	<on_crash>{$data[\'sstOnCrash\']}</on_crash>
+	<clock offset='{$data['sstClockOffset']}'/>
+	<on_poweroff>{$data['sstOnPowerOff']}</on_poweroff>
+	<on_reboot>{$data['sstOnReboot']}</on_reboot>
+	<on_crash>{$data['sstOnCrash']}</on_crash>
 	<devices>
-		<emulator>{$data[\'devices\'][\'sstEmulator\']}</emulator>
-		<graphics type=\"spice\" port=\"{$data[\'devices\'][\'graphics\'][\'spiceport\']}\" tlsPort=\"0\" autoport=\"no\" listen=\"{$data[\'devices\'][\'graphics\'][\'spicelistenaddress\']}\" passwd=\"{$data[\'devices\'][\'graphics\'][\'spicepassword\']}\">
-			<listen type=\"address\" address=\"{$data[\'devices\'][\'graphics\'][\'spicelistenaddress\']}\" />
+		<emulator>{$data['devices']['sstEmulator']}</emulator>
+		<graphics type='spice' port='{$data['devices']['graphics']['spiceport']}' tlsPort='0' autoport='no' listen='{$data['devices']['graphics']['spicelistenaddress']}' passwd='{$data['devices']['graphics']['spicepassword']}'>
+			<listen type='address' address='{$data['devices']['graphics']['spicelistenaddress']}' />
 {$spiceparams}		</graphics>
-		<channel type=\"spicevmc\">
-			<target type=\"virtio\" name=\"com.redhat.spice.0\"/>
+		<channel type='spicevmc'>
+			<target type='virtio' name='com.redhat.spice.0'/>
 		</channel>
-		<channel type=\"spiceport\">
-		    <target type=\"virtio\" name=\"org.spice-space.webdav.0\"/>
-		    <source channel=\"org.spice-space.webdav.0\"/>
+		<channel type='spiceport'>
+		    <target type='virtio' name='org.spice-space.webdav.0'/>
+		    <source channel='org.spice-space.webdav.0'/>
 		</channel>
-		<channel type=\"unix\">
-			<source mode=\"bind\"/>
-			<target type=\"virtio\" name=\"org.qemu.guest_agent.0\"/>
+		<channel type='unix'>
+			<source mode='bind'/>
+			<target type='virtio' name='org.qemu.guest_agent.0'/>
 		</channel>
 		<video>
-			<model type=\"qxl\" vram=\"65536\" heads=\"1\"/>
+			<model type='qxl' vram='65536' heads='1'/>
 		</video>
-		<input type=\"tablet\" bus=\"usb\"/>
-		<controller type=\"usb\" index=\"0\" model=\"ich9-ehci1\">
-			<address type=\"pci\" slot=\"0x08\" function=\"0x7\"/>
+		<input type='tablet' bus='usb'/>
+		<controller type='usb' index='0' model='ich9-ehci1'>
+			<address type='pci' slot='0x08' function='0x7'/>
 		</controller>
-		<controller type=\"usb\" index=\"0\" model=\"ich9-uhci1\">
-			<address type=\"pci\" slot=\"0x08\" function=\"0x0\" multifunction=\"on\"/>
+		<controller type='usb' index='0' model='ich9-uhci1'>
+			<address type='pci' slot='0x08' function='0x0' multifunction='on'/>
 		</controller>
-		<controller type=\"usb\" index=\"0\" model=\"ich9-uhci2\">
-			<address type=\"pci\" slot=\"0x08\" function=\"0x1\"/>
+		<controller type='usb' index='0' model='ich9-uhci2'>
+			<address type='pci' slot='0x08' function='0x1'/>
 		</controller>
-		<controller type=\"usb\" index=\"0\" model=\"ich9-uhci3\">
-			<address type=\"pci\" slot=\"0x08\" function=\"0x2\"/>
+		<controller type='usb' index='0' model='ich9-uhci3'>
+			<address type='pci' slot='0x08' function='0x2'/>
 		</controller>	
-		<redirdev bus=\"usb\" type=\"spicevmc\"></redirdev>
-		<redirdev bus=\"usb\" type=\"spicevmc\"></redirdev>
-		<redirdev bus=\"usb\" type=\"spicevmc\"></redirdev>
+		<redirdev bus='usb' type='spicevmc'></redirdev>
+		<redirdev bus='usb' type='spicevmc'></redirdev>
+		<redirdev bus='usb' type='spicevmc'></redirdev>
    		<redirfilter>
-			<usbdev allow=\"{$data[\'devices\'][\'usb\']}\"/>
+			<usbdev allow='{$data['devices']['usb']}'/>
 		</redirfilter>
-        <rng model=\"virtio\">
-            <rate period=\"1000\" bytes=\"1024\"/>
-            <backend model=\"random\">/dev/random</backend>
-        </rng>
+		<rng model='virtio'>
+			<rate period='1000' bytes='1024'/>
+			<backend model='random'>/dev/random</backend>
+		</rng>
 		{$devices}
 	</devices>
 </domain>
-';
+EOD;
 
     private function generateTargetInterfaceName($hostname, $interfacealias) {
         // Try to extract the digit from $interfacealias, assuming
@@ -585,15 +586,16 @@ class CPhpLibvirt {
 		return $port;
 	}
 
-	private static $xmlPoolTemplate = '
-<pool type=\"dir\">
-	<name>{$data[\'name\']}</name>
-	<uuid>{$data[\'uuid\']}</uuid>
+	// only double quotes must be escaped due to the eval
+	private static $xmlPoolTemplate = <<<'EOD'
+<pool type='dir'>
+	<name>{$data['name']}</name>
+	<uuid>{$data['uuid']}</uuid>
 	<target>
-		<path>{$data[\'path\']}</path>
+		<path>{$data['path']}</path>
 	</target>
 </pool>
-';
+EOD;
 
 	public function getStoragePoolXML($data) {
 		$template = CPhpLibvirt::$xmlPoolTemplate;
@@ -731,13 +733,14 @@ class CPhpLibvirt {
 	}
 	
 
-	private static $xmlVolumeTemplate = '
+	// only double quotes must be escaped due to the eval
+	private static $xmlVolumeTemplate = <<<'EOD'
 <volume>
-	<name>{$data[\'name\']}</name>
+	<name>{$data['name']}</name>
 	<allocation>0</allocation>
-	<capacity>{$data[\'capacity\']}</capacity>
+	<capacity>{$data['capacity']}</capacity>
 	<target>
-		<format type=\"qcow2\"/>
+		<format type='qcow2'/>
 		<permissions>
 			<owner>0</owner>
 			<group>3000</group>
@@ -745,7 +748,7 @@ class CPhpLibvirt {
 		</permissions>
 	</target>
 </volume>
-';
+EOD;
 
 	public function getVolumeXML($data) {
 		$template = CPhpLibvirt::$xmlVolumeTemplate;
@@ -823,24 +826,26 @@ class CPhpLibvirt {
 		return true;
 	}
 
-	private static $xmlBackingStoreVolumeTemplate = '
+	// only double quotes must be escaped due to the eval
+	private static $xmlBackingStoreVolumeTemplate = <<<'EOD'
 <volume>
-	<name>{$data[\'name\']}</name>
+	<name>{$data['name']}</name>
 	<allocation>0</allocation>
-	<capacity>{$data[\'capacity\']}</capacity>
+	<capacity>{$data['capacity']}</capacity>
 	<backingStore>
-		<path>{$data[\'goldenimagepath\']}</path>
-		<format type=\"qcow2\"/>
+		<path>{$data['goldenimagepath']}</path>
+		<format type='qcow2'/>
 	</backingStore>
 	<target>
-		<format type=\"qcow2\"/>
+		<format type='qcow2'/>
 		<permissions>
 			<owner>0</owner>
 			<group>3000</group>
 			<mode>0660</mode>
 		</permissions>
 	</target>
-</volume>';
+</volume>
+EOD;
 
 	public function getBackingStoreVolumeXML($data) {
 		$template = CPhpLibvirt::$xmlBackingStoreVolumeTemplate;
