@@ -6,13 +6,14 @@
  *                    support@foss-group.de
  *
  * and
- * Copyright (C) 2013 - 2014 stepping stone GmbH
+ * Copyright (C) 2013 - 2015 stepping stone GmbH
  *                           Switzerland
  *                           http://www.stepping-stone.ch
  *                           support@stepping-stone.ch
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Tiziano Müller <tiziano.mueller@stepping-stone.ch>
  *
  * Licensed under the EUPL, Version 1.1 or – as soon they
  * will be approved by the European Commission - subsequent
@@ -274,48 +275,59 @@ class VmController extends Controller
 
 	public function actionDelete() {
 		$this->disableWebLogRoutes();
-		if ('del' == $_POST['oper']) {
-			$dn = urldecode(Yii::app()->getRequest()->getPost('dn'));
-			$vm = CLdapRecord::model('LdapVm')->findByDn($dn);
-			if (!is_null($vm)) {
-				if (!$vm->isActive()) {
-					// delete sstDisk=vda->sstSourceFile
-					$libvirt = CPhpLibvirt::getInstance();
-					$message = '';
-					$disks = $vm->devices->getDisksByDevice('disk');
-					foreach($disks as $disk) {
-						if (!$libvirt->deleteVolumeFile($disk->sstSourceFile)) {
-							$message .= 'Unable to delete Volume File \'' . $diks->sstDisk . '\' for Vm \'' . $vm->sstDisplayName . '\'!<br/>';
-						}
-					}
 
-					// TODO: CWI remove also sstActiveGoldenImage from VmPool if this VM is that golden image
-						
-					// delete IP
-					if (!is_null($vm->network)) {
-						foreach($vm->network as $network) {
-							$network->delete();
-						}
-					}
-					
-					$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
+		if ('del' != Yii::app()->getRequest()->getPost('oper')) {
+			Yii::log('actionDelete: invalid oper value', 'error', 'vmController');
+			return;
+		}
 
-					// delete VM
-					$vm->delete(true);
-					if ('' != $message) {
-						$this->sendAjaxAnswer(array('error' => 1, 'message' => $message));
-					}
-					else {
-						// don't send data if no error!!!
-					}
-				}
-				else {
-					$this->sendAjaxAnswer(array('error' => 1, 'message' => 'Vm \'' . $vm->sstDisplayName . '\' is running!'));
-				}
+		$dn = urldecode(Yii::app()->getRequest()->getPost('dn'));
+		$vm = CLdapRecord::model('LdapVm')->findByDn($dn);
+
+		if (is_null($vm)) {
+			$this->sendAjaxAnswer(array('error' => 1, 'message' => "Vm '{$dn}' not found!"));
+			return;
+		}
+
+		if ($vm->isActive()) {
+			$this->sendAjaxAnswer(array('error' => 1, 'message' => "Vm '{$vm->sstDisplayName}' is running!"));
+			return;
+		}
+
+		// delete sstDisk=vda->sstSourceFile
+		$libvirt = CPhpLibvirt::getInstance();
+		$message = '';
+		$disks = $vm->devices->getDisksByDevice('disk');
+		foreach($disks as $disk) {
+			$diskpath = $disk->sstSourceFile;
+
+			if ($disk->sstType == 'network') {
+				$diskpath = str_replace(
+					Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][1],
+					Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][0],
+					$disk->sstSourceName);
 			}
-			else {
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => 'Vm \'' . $_POST['dn'] . '\' not found!'));
+
+			if (!$libvirt->deleteVolumeFile($diskpath)) {
+				$message .= "Unable to delete Volume File '{$diskpath}' for Vm '{$vm->sstDisplayName}'!<br/>";
 			}
+		}
+
+		// TODO: CWI remove also sstActiveGoldenImage from VmPool if this VM is that golden image
+
+		// delete IP
+		if (!is_null($vm->network)) {
+			foreach($vm->network as $network) {
+				$network->delete();
+			}
+		}
+
+		$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
+
+		// delete VM
+		$vm->delete(true);
+		if ('' != $message) {
+			$this->sendAjaxAnswer(array('error' => 1, 'message' => $message));
 		}
 	}
 
