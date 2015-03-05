@@ -294,13 +294,14 @@ class VmController extends Controller
 			return;
 		}
 
-		// delete sstDisk=vda->sstSourceFile
 		$libvirt = CPhpLibvirt::getInstance();
 		$message = '';
 		$disks = $vm->devices->getDisksByDevice('disk');
 		foreach($disks as $disk) {
 			$diskpath = $disk->sstSourceFile;
 
+			// if the disk is attached via gfapi, reconstruct the local filesystem path
+			// using the configuration in vm_config.php
 			if ($disk->sstType == 'network') {
 				$diskpath = str_replace(
 					Yii::app()->params['virtualization']['disk']['sstSourceName']['vm-persistent'][1],
