@@ -322,6 +322,23 @@ class VmController extends Controller
 			}
 		}
 
+		// check if the VM was streaming from a VM template and remove it from its list
+		$templatesStreaming = LdapVmFromTemplate::model()->findAll(
+			array('attr' => array(
+				'sstVirtualMachineType' => 'template',
+				'sstThinProvisioningVirtualMachine' => $vm->sstVirtualMachine
+			))
+		);
+		if (count($templatesStreaming) > 0) {
+			$template = $templatesStreaming[0];
+			$prov = $template->sstThinProvisioningVirtualMachine;
+			unset($prov[array_search($vm->sstVirtualMachine, $prov)]);
+			$template->setOverwrite(true);
+			$prov = array_values($prov); // to rebuild index
+			$template->sstThinProvisioningVirtualMachine = $prov;
+			$template->update();
+		}
+
 		$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
 
 		// delete VM
