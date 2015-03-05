@@ -5,13 +5,14 @@
  *                    http://www.foss-group.de
  *                    support@foss-group.de
  * and
- * Copyright (C) 2013 - 2014 stepping stone GmbH
+ * Copyright (C) 2013 - 2015 stepping stone GmbH
  *                           Switzerland
  *                           http://www.stepping-stone.ch
  *                           support@stepping-stone.ch
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Tiziano Müller <tiziano.mueller@stepping-stone.ch>
  *
  * Licensed under the EUPL, Version 1.1 or – as soon they
  * will be approved by the European Commission - subsequent
@@ -78,6 +79,9 @@ class LdapVm extends CLdapRecord {
 
 	protected function createAttributes() {
 		parent::createAttributes();
+
+		$this->_attributes['sstfeature']['type'] = 'array';
+		$this->_attributes['sstclocktimer']['type'] = 'array';
 
 		if (isset($this->_attributes['sstthinprovisioningvirtualmachine'])) {
 			$this->_attributes['sstthinprovisioningvirtualmachine']['type'] = 'array';

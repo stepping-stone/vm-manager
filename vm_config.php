@@ -5,7 +5,7 @@
  *                    http://www.foss-group.de
  *                    support@foss-group.de
  * and
- * Copyright (C) 2013 - 2014 stepping stone GmbH
+ * Copyright (C) 2013 - 2015 stepping stone GmbH
  *                           Switzerland
  *                           http://www.stepping-stone.ch
  *                           support@stepping-stone.ch
@@ -76,7 +76,7 @@ return array(
 	// using Yii::app()->params['paramName']
 	'params'=>array(
 		'virtualization' => array(
-			'version' => '1.2.18.20',
+			'version' => '1.2.18.21',
 
 			// Disk specific settings.
 			'disk' => array(
