@@ -5,13 +5,14 @@
  *                    http://www.foss-group.de
  *                    support@foss-group.de
  * and
- * Copyright (C) 2013 - 2014 stepping stone GmbH
+ * Copyright (C) 2013 - 2015 stepping stone GmbH
  *                           Switzerland
  *                           http://www.stepping-stone.ch
  *                           support@stepping-stone.ch
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Tiziano Mè´‰ller <tiziano.mueller@stepping-stone.ch>
  *
  * Licensed under the EUPL, Version 1.1 or ñ as soon they
  * will be approved by the European Commission - subsequent
@@ -62,7 +63,7 @@
 			$version = $params['VERSION'];
 		}
 		else {
-			$version = Yii::app()->params['virtualization']['version'];
+			$version = "unknown";
 		}
 		Yii::app()->getSession()->add('version', $version);
 	}
@@ -172,6 +173,7 @@ EOS
 	</div>
 	<div id="footer">
 		stoney cloud <?= $version; ?><br/>
+		vm-manager <?= Yii::app()->params['virtualization']['version']; ?><br/>
 		<!-- Copyright &copy; <?php echo date('Y'); ?> by FOSS-Group.<br/>
 		All Rights Reserved.<br/> -->
 	</div><!-- footer -->
