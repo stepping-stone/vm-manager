@@ -272,16 +272,27 @@ abstract class CLdapRecord extends CModel {
 						$this->_attributes[$name]['value'][$parts[1]] = $parts[2];
 						break;
 					case 'array':
+						if (is_null($value)) {
+							break;
+						}
 						if ($this->_overwrite) {
 							if (is_array($value)) {
 								$this->_attributes[$name]['value'] = $value;
 							}
-							else  if (!is_null($value)) {
+							else {
 								$this->_attributes[$name]['value'] = array($value);
 							}
 						}
-						else if (!is_null($value)) {
-							$this->_attributes[$name]['value'][] = $value;
+						else {
+							if (is_null($this->_attributes[$name]['value'])) {
+								$this->_attributes[$name]['value'] = array();
+							}
+							if (is_array($value)) {
+								$this->_attributes[$name]['value'] = array_merge($this->_attributes[$name]['value'], $value);
+							}
+							else {
+								$this->_attributes[$name]['value'][] = $value;
+							}
 						}
 						break;
 					default:
