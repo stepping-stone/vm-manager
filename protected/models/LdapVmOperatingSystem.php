@@ -31,7 +31,7 @@ class LdapVmOperatingSystem extends CLdapRecord {
 	protected $_branchDn = '';
 	protected $_filter = array('all' => 'ou=*');
 	protected $_dnAttributes = array('ou');
-	protected $_objectClasses = array('sstOperatingSystemObjectClass', 'sstRelationship', 'organizationalUnit', 'labeledURIObject', 'top');
+	protected $_objectClasses = array('sstOperatingSystemObjectClass', 'organizationalUnit', 'top');
 
 	/**
 	 * Returns the static model of the specified LDAP class.

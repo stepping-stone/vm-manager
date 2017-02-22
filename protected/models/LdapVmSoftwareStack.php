@@ -31,7 +31,7 @@ class LdapVmSoftwareStack extends CLdapRecord {
 	protected $_branchDn = '';
 	protected $_filter = array('all' => 'ou=*');
 	protected $_dnAttributes = array('ou');
-	protected $_objectClasses = array('sstGroupObjectClass', 'sstRelationship', 'labeledURIObject', 'top');
+	protected $_objectClasses = array('sstGroupObjectClass', 'labeledURIObject', 'top');
 	
 	public function relations()
 	{

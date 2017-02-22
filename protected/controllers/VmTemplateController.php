@@ -155,8 +155,6 @@ class VmTemplateController extends Controller
 			$os->sstOperatingSystem = $model->os;
 			$os->sstOperatingSystemType = $model->ostype;
 			$os->sstOperatingSystemVersion = $model->osversion;
-			$os->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
-			$os->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
 				
 /*
 			$subnets = CLdapRecord::model('LdapDhcpSubnet')->findAll(array('attr'=>array()));
@@ -630,8 +628,6 @@ class VmTemplateController extends Controller
 				$os->sstOperatingSystem = $result->operatingsystem->sstOperatingSystem;
 				$os->sstOperatingSystemType = $result->operatingsystem->sstOperatingSystemType;
 				$os->sstOperatingSystemVersion = $result->operatingsystem->sstOperatingSystemVersion;
-				$os->sstBelongsToCustomerUID = $finishForm['customer']; // Yii::app()->user->customerUID;
-				$os->sstBelongsToResellerUID = $finishForm['reseller']; // Yii::app()->user->resellerUID;
 			}			
 			$vmstack = null;
 			$stack = LdapConfigurationSoftwareStack::model()->findByDn($finishForm['stack']);
@@ -643,9 +639,6 @@ class VmTemplateController extends Controller
 				$vmstack->labeledURI = 'ldap:///' . $finishForm['stack'];
 				$vmstack->sstEnvironmentName = $finishForm['env'];
 				$vmstack->sstBusinessLogicRoleName = $stack->sstBusinessLogicRoleName;
-				
-				$vmstack->sstBelongsToCustomerUID = $finishForm['customer']; // Yii::app()->user->customerUID;
-				$vmstack->sstBelongsToResellerUID = $finishForm['reseller']; // Yii::app()->user->resellerUID;
 			}
 			else {
 				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Software stack not found!')));
@@ -2316,7 +2309,7 @@ EOS;
 		$os = $template->operatingsystem;
 		if (!is_null($os)) {
 			$envs = LdapConfigurationSoftwareStackEnvironment::model()->findAll(array('attr' => array()));
-			$stacks = LdapConfigurationSoftwareStack::model()->findAll(array('attr' => array('labeledURI' => $os->labeledURI)));
+			$stacks = LdapConfigurationSoftwareStack::model()->findAll(array('attr' => array()));
 			$json['length'] = count($stacks);
 			foreach($stacks as $stack) {
 				$data = array();

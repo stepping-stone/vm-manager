@@ -140,8 +140,6 @@ class VmProfileController extends Controller
 			$os->sstOperatingSystem = $model->os;
 			$os->sstOperatingSystemType = $model->ostype;
 			$os->sstOperatingSystemVersion = $model->osversion;
-			$os->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
-			$os->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
 				
 			$copydata = array();
 			$parts = explode('°', $_POST['VmProfileForm']['path']);
