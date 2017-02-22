@@ -12,6 +12,6 @@ Copyright (C) 2012 - 2013 FOSS-Group, Germany, http://www.foss-group.de, support
 
 and
 
-Copyright (C) 2013 - 2014 stepping stone GmbH, Switzerland, http://www.stepping-stone.ch, support@stepping-stone.ch
+Copyright (C) 2013 - 2017 stepping stone GmbH, Switzerland, http://www.stepping-stone.ch, support@stepping-stone.ch
 
 Code released under the [EUPL license](LICENSE).

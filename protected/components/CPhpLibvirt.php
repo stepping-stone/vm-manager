@@ -7,10 +7,10 @@
  *
  * and
  *
- * Copyright (C) 2015 stepping stone GmbH
- *                    Switzerland
- *                    http://www.stepping-stone.ch
- *                    support@stepping-stone.ch
+ * Copyright (C) 2015 - 2017 stepping stone GmbH
+ *                           Switzerland
+ *                           http://www.stepping-stone.ch
+ *                           support@stepping-stone.ch
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
@@ -450,7 +450,8 @@ EOD;
 				$devices .= '		<disk type="' . $disk['sstType'] . '" device="' . $disk['sstDevice'] . '">' . "\n";
 				if (isset($disk['sstDriverName']) && isset($disk['sstDriverType'])) {
 					$devices .= '			<driver name="' . $disk['sstDriverName'] . '" type="' . $disk['sstDriverType'] .
-						(isset($disk['sstDriverCache']) && '' != $disk['sstDriverCache'] ? '" cache="' . $disk['sstDriverCache'] : '') . '"/>' . "\n";
+						(isset($disk['sstDriverCache']) && '' != $disk['sstDriverCache'] ? '" cache="' . $disk['sstDriverCache'] : '') .
+						'" error_policy="stop" />' . "\n";
 				}
 				$devices .= '			<source file="' . $disk['sstSourceFile'] . '"/>' . "\n";
 				$devices .= '			<target dev="' . $disk['sstDisk'] . '" bus="' . $disk['sstTargetBus'] . '"/>' . "\n";
@@ -463,7 +464,8 @@ EOD;
 				$devices .= '		<disk type="' . $disk['sstType'] . '" device="' . $disk['sstDevice'] . '">' . "\n";
 				if (isset($disk['sstDriverName']) && isset($disk['sstDriverType'])) {
 					$devices .= '			<driver name="' . $disk['sstDriverName'] . '" type="' . $disk['sstDriverType'] .
-					(isset($disk['sstDriverCache']) && '' != $disk['sstDriverCache'] ? '" cache="' . $disk['sstDriverCache'] : '') . '"/>' . "\n";
+						(isset($disk['sstDriverCache']) && '' != $disk['sstDriverCache'] ? '" cache="' . $disk['sstDriverCache'] : '') .
+						'" error_policy="stop" />' . "\n";
 				}
 				$devices .= '			<source protocol="' . $disk['sstSourceProtocol'] . '" name="' . $disk['sstSourceName'] . '">' . "\n";
 				$devices .= '				<host name="' .  $disk['sstSourceHostName'] . '" port="' . $disk['sstSourcePort'] . '"/>' . "\n";
